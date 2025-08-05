@@ -1,0 +1,33 @@
+appId: com.bytehint.exm
+productName: EXM 2.0
+
+directories:
+    buildResources: resources/build
+
+files:
+    - "!**/.vscode/*"
+    - "!src/*"
+    - "!electron.vite.config.{js,ts,mjs,cjs}"
+    - "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
+    - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
+    - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+
+asarUnpack:
+    - resources/**
+
+win:
+    executableName: EXM 2.0
+    target:
+        - nsis
+    icon: resources/build/icon.ico # make sure this path is correct
+    artifactName: ${productName}-${version}-setup.${ext}
+
+nsis:
+    shortcutName: EXM 2.0
+    uninstallDisplayName: EXM 2.0
+    createDesktopShortcut: always
+
+npmRebuild: false
+# publish:
+#   provider: generic
+#   url: https://example.com/auto-updates
