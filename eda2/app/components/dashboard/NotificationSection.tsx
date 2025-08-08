@@ -15,34 +15,59 @@ import {
     PanelTop,
     Repeat
   } from "lucide-react";
-  import { useState } from "react";
+  import { useState, useEffect } from "react";
   import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
   
   interface NotificationSectionProps {
-    onTabChange?: (tab: string) => void;
-  }
+  onTabChange?: (tab: string) => void;
+  activeSidebarSection?: string;
+}
   
-  export const NotificationSection = ({ onTabChange }: NotificationSectionProps) => {
-    const [activeTab, setActiveTab] = useState("cpu");
+  export const NotificationSection = ({ onTabChange, activeSidebarSection }: NotificationSectionProps) => {
+  // Reset activeTab when sidebar section changes
+  const [activeTab, setActiveTab] = useState(() => {
+    return activeSidebarSection === "Hardware" ? "cpu" : "core";
+  });
 
-    const navItems = [
-      { id: "core", label: "Core", icon: Settings },
-      { id: "power", label: "Power", icon: BatteryCharging },
-      { id: "security", label: "Security", icon: Shield },
-      { id: "qol", label: "QOL", icon: Sparkles },
-      { id: "apps", label: "Apps", icon: AppWindow },
-      { id: "games", label: "Games", icon: Gamepad2 },
-    ];
-    
-  /*
-    // Hardware
-    const navItems = [
-      { id: "cpu", label: "CPU", icon: Cpu },
-      { id: "gpu", label: "GPU", icon: Gpu },
-      { id: "ram", label: "RAM", icon: MemoryStick },
-      { id: "monitor", label: "Monitor", icon: Monitor },
-      { id: "peripherals", label: "Peripherals", icon: Keyboard },
-    ]; */
+  const navItems = [
+    { id: "core", label: "Core", icon: Settings },
+    { id: "power", label: "Power", icon: BatteryCharging },
+    { id: "security", label: "Security", icon: Shield },
+    { id: "qol", label: "QOL", icon: Sparkles },
+    { id: "apps", label: "Apps", icon: AppWindow },
+    { id: "games", label: "Games", icon: Gamepad2 },
+  ];
+
+  // Hardware
+  const hardwareNavItems = [
+    { id: "cpu", label: "CPU", icon: Cpu },
+    { id: "gpu", label: "GPU", icon: Gpu },
+    { id: "ram", label: "RAM", icon: MemoryStick },
+    { id: "monitor", label: "Monitor", icon: Monitor },
+    { id: "peripherals", label: "Peripherals", icon: Keyboard },
+  ];
+
+  // Determine which navigation items to show based on sidebar section
+  const currentNavItems = activeSidebarSection === "Hardware" ? hardwareNavItems : navItems;
+  
+  // Update activeTab when sidebar section changes
+  useEffect(() => {
+    console.log("NotificationSection: Sidebar section changed to:", activeSidebarSection);
+    if (activeSidebarSection === "Hardware") {
+      console.log("NotificationSection: Setting activeTab to cpu");
+      setActiveTab("cpu");
+      // Don't automatically call onTabChange here, let user click
+    } else {
+      console.log("NotificationSection: Setting activeTab to core");
+      setActiveTab("core");
+      // Don't automatically call onTabChange here, let user click
+    }
+  }, [activeSidebarSection]);
+
+  // Also log the current state for debugging
+  console.log("NotificationSection: Current activeTab:", activeTab);
+  console.log("NotificationSection: Current activeSidebarSection:", activeSidebarSection);
+  console.log("NotificationSection: Showing hardware items:", activeSidebarSection === "Hardware"); 
     /*
     const navItems = [
       { id: "clean", label: "Clean", icon: BrushCleaning },
@@ -53,6 +78,7 @@ import {
   */
   
     const handleTabChange = (newTab: string) => {
+      console.log("NotificationSection: Tab clicked:", newTab);
       setActiveTab(newTab);
       onTabChange?.(newTab);
     };
@@ -65,7 +91,7 @@ import {
           onValueChange={(val) => val && handleTabChange(val)}
           className="flex items-center gap-2.5"
         >
-          {navItems.map((item) => {
+          {currentNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
   

@@ -331,15 +331,8 @@ export const SettingsSection = ({
   
   // Filter settings based on active category, search query, and filter state
   const filteredSettings = allSettingsData.filter((setting) => {
-    // Handle category filtering for general and hardware
-    let matchesCategory = false;
-    if (activeCategory === "general") {
-      matchesCategory = ["core", "power", "security", "qol", "apps", "games"].includes(setting.category);
-    } else if (activeCategory === "hardware") {
-      matchesCategory = ["cpu", "gpu", "ram", "monitor", "peripherals"].includes(setting.category);
-    } else {
-      matchesCategory = setting.category === activeCategory;
-    }
+    // Simple category matching since we're now using specific categories
+    const matchesCategory = setting.category === activeCategory;
 
     const matchesSearch =
       searchQuery === "" ||

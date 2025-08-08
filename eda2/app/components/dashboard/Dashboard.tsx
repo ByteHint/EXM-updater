@@ -8,9 +8,10 @@ import { SettingsSection } from "./SettingsSection";
 import Sidebar from "./Sidebar";
 
 export default function Dashboard() {
-  const [activeCategory, setActiveCategory] = useState("general");
+  const [activeCategory, setActiveCategory] = useState("core");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [activeSidebarSection, setActiveSidebarSection] = useState("General");
   const [filterState, setFilterState] = useState<"all" | "enabled" | "disabled" | "alerts">("all");
   const [sortState, setSortState] = useState<"name" | "alerts" | "status">("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -25,6 +26,19 @@ export default function Dashboard() {
 
   const handleSidebarCollapseChange = (isCollapsed: boolean) => {
     setIsSidebarCollapsed(isCollapsed);
+  };
+
+  const handleSidebarSectionChange = (section: string) => {
+    console.log("Dashboard: Sidebar section changed to:", section);
+    setActiveSidebarSection(section);
+    // Reset to first category when switching sections
+    if (section === "General") {
+      console.log("Dashboard: Setting activeCategory to core");
+      setActiveCategory("core");
+    } else if (section === "Hardware") {
+      console.log("Dashboard: Setting activeCategory to cpu");
+      setActiveCategory("cpu");
+    }
   };
   const handleFilterChange = (filter: "all" | "enabled" | "disabled" | "alerts") => {
     setFilterState(filter);
@@ -83,13 +97,8 @@ export default function Dashboard() {
     { category: "peripherals", isEnabled: true, alertCount: 0 },
   ];
 
-  // Filter settings based on active category (general or hardware)
+  // Filter settings based on active category
   const categorySettings = allSettings.filter((setting) => {
-    if (activeCategory === "general") {
-      return ["core", "power", "security", "qol", "apps", "games"].includes(setting.category);
-    } else if (activeCategory === "hardware") {
-      return ["cpu", "gpu", "ram", "monitor", "peripherals"].includes(setting.category);
-    }
     return setting.category === activeCategory;
   });
 
@@ -124,10 +133,10 @@ export default function Dashboard() {
   return (
     <div className="flex flex-row h-full bg-[#0A0A0F]">
       {/* Sidebar */}
-      <Sidebar onCollapseChange={handleSidebarCollapseChange} />
+      <Sidebar onCollapseChange={handleSidebarCollapseChange} onSectionChange={handleSidebarSectionChange} />
       <div className={`flex-1 p-6 transition-all duration-300 ${isSidebarCollapsed ? "ml-0" : ""}`}>
         <ActionItemsSection activeCategory={activeCategory} />
-        <NotificationSection onTabChange={handleTabChange} />
+        <NotificationSection onTabChange={handleTabChange} activeSidebarSection={activeSidebarSection} />
         <ControlPanelSection
           onSearchChange={handleSearchChange}
           onFilterChange={handleFilterChange}

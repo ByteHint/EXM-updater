@@ -8,10 +8,8 @@ import {
     Wand2,
     Cpu,
     BrushCleaning,
-    SquareChevronRight,
   } from "lucide-react";
   import { Button } from "../ui/button";
-  import { title } from "process";
   
   interface ActionItemsSectionProps {
     activeCategory?: string;
@@ -44,33 +42,48 @@ import {
         description: "Manage and optimize installed applications.",
         icon: AppWindow,
       },
-      games: {
+            games: {
         title: "Gaming Performance",
         description: "Enhance gaming experience and reduce input lag.",
         icon: Gamepad2,
       },
-  
-      hardware: {
-        title: "Hardware",
-        description: "Optimize your hardware settings.",
+
+      // Hardware categories
+      cpu: {
+        title: "CPU Optimization",
+        description: "Optimize processor settings for maximum performance.",
         icon: Cpu,
       },
-  
+      gpu: {
+        title: "GPU Settings",
+        description: "Configure graphics card for optimal performance.",
+        icon: Cpu,
+      },
+      ram: {
+        title: "Memory Management",
+        description: "Optimize RAM usage and memory settings.",
+        icon: Cpu,
+      },
+      monitor: {
+        title: "Display Settings",
+        description: "Configure monitor and display optimizations.",
+        icon: Cpu,
+      },
+      peripherals: {
+        title: "Peripheral Devices",
+        description: "Optimize mouse, keyboard, and other peripherals.",
+        icon: Cpu,
+      },
+
        debloat: {
         title: "Debloat",
         description: "Remove unnecessary apps and services.",
         icon: BrushCleaning,
       },
-
-      general:{
-        title:"General",
-        description: "Enhance your system performance.",
-        icon: SquareChevronRight,
-      },
     };
   
     const current =
-      categoryInfo[activeCategory as keyof typeof categoryInfo] || categoryInfo.general;
+      categoryInfo[activeCategory as keyof typeof categoryInfo] || categoryInfo.core;
     const CategoryIcon = current.icon;
   
     return (

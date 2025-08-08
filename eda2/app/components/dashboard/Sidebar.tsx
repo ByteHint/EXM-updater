@@ -31,7 +31,7 @@ import {
   
   export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [activeSection, setActiveSection] = useState("Debloat");
+    const [activeSection, setActiveSection] = useState("General");
   
     const handleToggle = (collapsed: boolean) => {
       setIsCollapsed(collapsed);
@@ -39,6 +39,7 @@ import {
     };
   
     const handleSectionClick = (section: string) => {
+      console.log("Sidebar: Section clicked:", section);
       setActiveSection(section);
       onSectionChange?.(section);
     };
