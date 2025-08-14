@@ -3,6 +3,7 @@ import { Card, CardContent } from "../ui/card";
 import { Separator } from "../ui/separator";
 import { Switch } from "../ui/switch";
 import { useState } from "react";
+import {Slider} from "@heroui/slider";
 
 interface SettingCardProps {
   title: string;
@@ -433,6 +434,7 @@ const SettingCard = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("High");
   const [optimizeState, setOptimizeState] = useState<'idle' | 'optimizing' | 'optimized'>('idle');
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleOptimize = async () => {
     if (optimizeState === 'idle') {
@@ -541,10 +543,69 @@ const SettingCard = ({
                     </button>
                   ) : hasConfigure ? (
                   <div className="w-full flex justify-center">
-                    <button className="flex items-center gap-2 bg-[#1A1A24] hover:bg-pink-600 text-white text-xs px-6 py-2 rounded-md transition cursor-pointer">
+                    <button  onClick={() => setIsOpen(true)} className="flex items-center gap-2 bg-[#1A1A24] hover:bg-pink-600 text-white text-xs px-6 py-2 rounded-md transition cursor-pointer">
                       <SlidersHorizontal className="w-4 h-4" />
                       <span>Configure</span>
                     </button>
+                        {isOpen && (
+                        <div
+                          className="fixed inset-0 backdrop-blur-xs flex justify-center items-center z-50"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          {/* Popup Box */}
+                          <div
+                            className="w-[380px] h-[488px] bg-[#14141E] text-white p-6 rounded-lg shadow-lg w-96"
+                            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+                          >
+                            <h2 className="text-lg font-bold mb-4">Set System32 priority</h2>
+                            <p className="mb-4">
+                            Boosts performance by prioritizing essential system tasks over less important ones.
+                            </p>
+
+                            {/* Example Inputs */}
+                            <label className="block mb-2 text-sm font-medium">
+                              Setting 1:
+                              <input
+                                type="text"
+                                className="w-full mt-1 p-2 border rounded-md"
+                                placeholder="Enter value"
+                              />
+                            </label>
+                            
+                            <label className="block mb-4 text-sm font-medium">
+                              Setting 2:
+                              <select className="w-full mt-1 p-2 border rounded-md">
+                                <option>Option A</option>
+                                <option>Option B</option>
+                              </select>
+                            </label>
+                            
+                            <div className="flex flex-col gap-6 w-full max-w-md">
+                                  <Slider
+                                    aria-label="Temperature"
+                                    className="max-w-md"
+                                    color="secondary"
+                                    defaultValue={0.2}
+                                    disableThumbScale={true}
+                                    maxValue={1}
+                                    minValue={0}
+                                    size="sm"
+                                    step={0.01}
+                                  />
+                                 
+                                </div>
+                            {/* Actions */}
+                            <div className="flex justify-center gap-3">
+                              <button
+                                onClick={() => setIsOpen(false)}
+                                className="px-4 py-2 bg-pink-600 rounded-lg hover:bg-gray-400 w-full text-black text-sm"
+                              >
+                                Apply
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                   </div>
                 ) : (
                   <>
