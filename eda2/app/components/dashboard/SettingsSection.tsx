@@ -561,24 +561,6 @@ const SettingCard = ({
                             <p className="mb-4">
                             Boosts performance by prioritizing essential system tasks over less important ones.
                             </p>
-
-                            {/* Example Inputs */}
-                            <label className="block mb-2 text-sm font-medium">
-                              Setting 1:
-                              <input
-                                type="text"
-                                className="w-full mt-1 p-2 border rounded-md"
-                                placeholder="Enter value"
-                              />
-                            </label>
-                            
-                            <label className="block mb-4 text-sm font-medium">
-                              Setting 2:
-                              <select className="w-full mt-1 p-2 border rounded-md">
-                                <option>Option A</option>
-                                <option>Option B</option>
-                              </select>
-                            </label>
                             
                             <div className="flex flex-col gap-6 w-full max-w-md">
                                   <Slider
