@@ -18,8 +18,19 @@ export const WindowContextProvider = ({ children, titlebar }: WindowContextProvi
     titlebar = { ...defaultTitlebar, ...titlebar };
 
     useEffect(() => {
-        // Load window init props
-        window.api.invoke("init-window").then((value: WindowInitProps) => setInitProps(value));
+        // Load window init props if in Electron environment
+        if (typeof window !== "undefined" && window.api) {
+            window.api.invoke("init-window").then((value: WindowInitProps) => setInitProps(value));
+        } else {
+            // Set default props for web environment
+            setInitProps({
+                width: 1280,
+                height: 762,
+                maximizable: false,
+                minimizable: true,
+                platform: "web",
+            });
+        }
 
         // Add class to parent element
         const parent = document.querySelector(".window-content")?.parentElement;

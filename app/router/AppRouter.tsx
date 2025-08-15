@@ -7,6 +7,7 @@ import { useAuthStore } from "@/app/store/useAuthStore"; // Corrected import pat
 // Import your page components
 import Dashboard from "@/app/components/dashboard/Dashboard"; // Assuming paths
 import Welcome from "@/app/components/welcome/Welcome";
+import OAuthCallback from "@/app/components/auth/OAuthCallback";
 // import TweaksPage from "@/components/tweaks/TweaksPage"; // Example for a new page
 // import SettingsPage from "@/components/settings/SettingsPage";
 // import ProfilePage from "@/components/profile/ProfilePage";
@@ -45,9 +46,12 @@ const Root: React.FC = () => {
 const AppRouter: React.FC = () => {
     return (
         <Routes>
+            {/* OAuth Callback Route - No authentication required */}
+            <Route path="/auth/callback" element={<OAuthCallback />} />
+
             {/* Public routes are nested under the PublicRoute layout */}
             <Route element={<PublicRoute />}>
-                <Route path="/welcome" element={<Dashboard />} />
+                <Route path="/welcome" element={<Welcome />} />
                 {/* You can add other public routes like /signup here */}
             </Route>
 

@@ -127,6 +127,13 @@ const TitlebarMenuPopupItem = ({ item }: { item: TitlebarMenuItem }) => {
             return;
         }
 
+        // Check if we're in Electron environment
+        if (typeof window === "undefined" || !window.api) {
+            console.warn(`Menu action '${item.action}' not available in web mode`);
+            setActiveMenuIndex(null);
+            return;
+        }
+
         // Invoke the action with the provided parameters
         window.api.invoke(item.action!, ...(item.actionParams ? item.actionParams : []));
         setActiveMenuIndex(null);

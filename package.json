@@ -11,6 +11,7 @@
         "lint": "eslint . --ext .ts,.tsx --fix",
         "start": "electron-vite preview",
         "check": "npm run lint && npm run format -- --check",
+        "build": "npm run vite:build:app",
         "postinstall": "electron-builder install-app-deps",
         "vite:build:app": "electron-vite build",
         "electron:build:win": "electron-builder --win",

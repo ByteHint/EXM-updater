@@ -38,6 +38,14 @@ export const registerWindowIPC = (mainWindow: BrowserWindow) => {
         return id;
     });
 
+    // OAuth callback handler
+    handleIPC("oauth-callback", (event, data) => {
+        console.warn(`[IPC] OAuth callback received: ${data}`);
+        // Send the data to the renderer process
+        mainWindow.webContents.send("oauth-callback", data);
+        return { success: true };
+    });
+
     const webContents = mainWindow.webContents;
     handleIPC("web-undo", () => webContents.undo());
     handleIPC("web-redo", () => webContents.redo());

@@ -51,6 +51,7 @@ interface AuthActions {
     verifyOtp: (otp: string) => Promise<boolean>;
     forgotPassword: (email: string) => Promise<boolean>;
     resetPassword: (newPassword: string) => Promise<boolean>;
+    resendOtp: () => Promise<boolean>;
 
     // OAuth for direct login
     googleLogin: () => Promise<void>;
@@ -61,6 +62,21 @@ interface AuthActions {
     // Utility actions
     clearError: () => void;
     resetAuthFlow: () => void;
+
+    // Setters for OAuth callback
+    setUser: (user: User | null) => void;
+    setIsAuthenticated: (isAuthenticated: boolean) => void;
+    setLoading: (isLoading: boolean) => void;
+    setError: (error: string | null) => void;
+
+    // OAuth callback handling
+    handleOAuthCallback: (data: string) => void;
+    initializeOAuthListener: () => void;
+    cleanupOAuthListener: () => void;
+
+    // Polling for OAuth status
+    pollForAuthStatus: () => Promise<void>;
+    manualRefreshAuth: () => Promise<void>;
 }
 
 // --- ZUSTAND STORE CREATION ---
@@ -77,34 +93,105 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     // --- ACTIONS ---
 
     /**
-     * Checks for a stored token and validates it with the backend. Essential for app startup.
+     * Validates the current session by checking the stored token
      */
     validateSession: async () => {
-        if (!get().isLoading) set({ isLoading: true });
         const token = localStorage.getItem("auth_token");
 
         if (!token) {
-            return set({ isLoading: false, isAuthenticated: false, user: null });
+            console.warn("[VALIDATE SESSION] No token found");
+            set({ isAuthenticated: false, user: null, isLoading: false });
+            return;
         }
 
-        const response = await apiClient.validateToken();
-        if (response.success) {
+        // Check if token looks valid (basic JWT format check)
+        const tokenParts = token.split(".");
+        if (tokenParts.length !== 3) {
+            console.error("[VALIDATE SESSION] Token format invalid - not a valid JWT");
+            localStorage.removeItem("auth_token");
             set({
-                user: response.user,
-                isAuthenticated: true,
+                isAuthenticated: false,
+                user: null,
                 isLoading: false,
-                error: null,
-                authFlowStatus: "idle",
+                error: "Invalid token format",
             });
-        } else {
+            return;
+        }
+
+        try {
+            console.warn("[VALIDATE SESSION] Validating token...");
+            console.warn(`[VALIDATE SESSION] Token preview: ${token.substring(0, 50)}...`);
+            const response = await apiClient.validateToken();
+
+            if (response.success && response.user) {
+                console.warn(
+                    "[VALIDATE SESSION] Token valid, user authenticated:",
+                    response.user.email,
+                );
+                set({
+                    user: response.user,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null,
+                });
+            } else {
+                console.warn("[VALIDATE SESSION] Token invalid, clearing session");
+                console.warn("[VALIDATE SESSION] Response:", response);
+                localStorage.removeItem("auth_token");
+                set({
+                    user: null,
+                    isAuthenticated: false,
+                    isLoading: false,
+                    error: response.message || "Session expired",
+                });
+            }
+        } catch (error) {
+            console.error("[VALIDATE SESSION] Error validating session:", error);
+            localStorage.removeItem("auth_token");
             set({
                 user: null,
                 isAuthenticated: false,
                 isLoading: false,
-                error: null,
-                authFlowStatus: "idle",
+                error: "Failed to validate session",
             });
         }
+    },
+
+    /**
+     * Polls for authentication status (used as fallback for OAuth)
+     */
+    pollForAuthStatus: async () => {
+        console.warn("[OAUTH POLL] Starting auth status polling...");
+        let pollCount = 0;
+        const maxPolls = 30; // 1 minute at 2-second intervals
+        const pollInterval = setInterval(async () => {
+            pollCount++;
+            console.warn(`[OAUTH POLL] Polling attempt ${pollCount}/${maxPolls}...`);
+
+            try {
+                await get().validateSession();
+
+                // If we're authenticated, stop polling
+                if (get().isAuthenticated) {
+                    console.warn("[OAUTH POLL] Authentication detected, stopping polling");
+                    clearInterval(pollInterval);
+                    return;
+                }
+
+                // If we've reached max polls, stop and show error
+                if (pollCount >= maxPolls) {
+                    clearInterval(pollInterval);
+                    console.warn(`[OAUTH POLL] Polling stopped after ${maxPolls} attempts`);
+                    set({
+                        error: "OAuth authentication timeout. Please try again.",
+                        isLoading: false,
+                        authFlowStatus: "idle",
+                    });
+                }
+            } catch (error) {
+                console.error(`[OAUTH POLL] Error during polling attempt ${pollCount}:`, error);
+            }
+        }, 2000);
     },
 
     /**
@@ -114,17 +201,43 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     signIn: async (email, password) => {
         set({ isLoading: true, error: null, authFlowStatus: "idle" });
 
-        const hardwareId = await window.api.invoke("get-hardware-id");
+        try {
+            // Get hardware ID if in Electron environment
+            let hardwareId: string | undefined = undefined;
+            if (typeof window !== "undefined" && window.api) {
+                hardwareId = await window.api.invoke("get-hardware-id");
+            }
 
-        const response = await apiClient.signIn(email, password, hardwareId);
+            const response = await apiClient.signIn(email, password, hardwareId);
 
-        if (response.success && response.token) {
-            localStorage.setItem("auth_token", response.token);
-            set({ user: response.user, isAuthenticated: true, isLoading: false });
-            return true;
+            if (response.success && response.token) {
+                localStorage.setItem("auth_token", response.token);
+                set({
+                    user: response.user,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    authFlowStatus: "idle",
+                    flowEmail: null,
+                });
+                return true;
+            } else if (response.requiresOtp) {
+                // User needs to verify OTP first
+                set({
+                    isLoading: false,
+                    authFlowStatus: "awaiting-otp",
+                    flowEmail: email,
+                    error: null,
+                });
+                return false;
+            }
+
+            set({ error: response.message || "Sign in failed.", isLoading: false });
+            return false;
+        } catch (error: any) {
+            console.error("Error in signIn:", error);
+            set({ error: error.message || "Sign in failed.", isLoading: false });
+            return false;
         }
-        set({ error: response.message || "Sign in failed.", isLoading: false });
-        return false;
     },
 
     /**
@@ -132,18 +245,40 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
      * @returns `true` if the sign-up request was accepted, `false` otherwise.
      */
     signUp: async (email, password) => {
+        console.warn("SignUp function called with:", { email, password });
         set({ isLoading: true, error: null });
 
-        const hardwareId = await window.api.invoke("get-hardware-id");
-        const response = await apiClient.signUp(email, password, hardwareId);
+        try {
+            console.warn("Getting hardware ID...");
+            let hardwareId: string | undefined = undefined;
+            if (typeof window !== "undefined" && window.api) {
+                hardwareId = await window.api.invoke("get-hardware-id");
+                console.warn("Hardware ID received:", hardwareId);
+            } else {
+                console.warn("Hardware ID not available (web mode)");
+            }
 
-        if (response.success) {
-            // Don't log in yet; move to the OTP step and store the email for verification.
-            set({ isLoading: false, authFlowStatus: "awaiting-otp", flowEmail: email });
-            return true;
+            console.warn("Calling API client signUp...");
+            const response = await apiClient.signUp(email, password, hardwareId);
+            console.warn("API response received:", response);
+
+            if (response.success) {
+                // Don't log in yet; move to the OTP step and store the email for verification.
+                set({
+                    isLoading: false,
+                    authFlowStatus: "awaiting-otp",
+                    flowEmail: email,
+                    error: null,
+                });
+                return true;
+            }
+            set({ error: response.message || "Sign up failed.", isLoading: false });
+            return false;
+        } catch (error: any) {
+            console.error("Error in signUp:", error);
+            set({ error: error.message || "Sign up failed.", isLoading: false });
+            return false;
         }
-        set({ error: response.message || "Sign up failed.", isLoading: false });
-        return false;
     },
 
     /**
@@ -161,24 +296,48 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
         set({ isLoading: true, error: null });
         const response = await apiClient.verifyOtp(email, otp);
 
-        if (response.success) {
-            // If the API returns a token, it means sign-up is complete and we can log in.
-            if (response.success && response.token) {
-                localStorage.setItem("auth_token", response.token);
-                set({
-                    user: response.user,
-                    isAuthenticated: true,
-                    isLoading: false,
-                    authFlowStatus: "idle",
-                    flowEmail: null,
-                });
-            } else {
-                // Otherwise, it was for a password reset. Move to the next step.
-                set({ isLoading: false, authFlowStatus: "awaiting-password-reset" });
-            }
+        if (response.success && response.token) {
+            // OTP verification successful and we got a token - user is now logged in
+            localStorage.setItem("auth_token", response.token);
+            set({
+                user: response.user,
+                isAuthenticated: true,
+                isLoading: false,
+                authFlowStatus: "idle",
+                flowEmail: null,
+            });
+            return true;
+        } else if (response.success) {
+            // OTP verified but no token (password reset flow)
+            set({ isLoading: false, authFlowStatus: "awaiting-password-reset" });
             return true;
         }
+
         set({ error: response.message || "Invalid OTP.", isLoading: false });
+        return false;
+    },
+
+    /**
+     * Resends OTP to the email stored in flowEmail.
+     * @returns `true` on success, `false` otherwise.
+     */
+    resendOtp: async () => {
+        const email = get().flowEmail;
+        if (!email) {
+            return (
+                set({ error: "An unexpected error occurred. Please restart the process." }), false
+            );
+        }
+
+        set({ isLoading: true, error: null });
+        const response = await apiClient.resendOtp(email);
+
+        if (response.success) {
+            set({ isLoading: false, error: null });
+            return true;
+        }
+
+        set({ error: response.message || "Failed to resend OTP.", isLoading: false });
         return false;
     },
 
@@ -260,40 +419,91 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
 
     // --- OAuth Section ---
     /**
-     * Generic handler for OAuth pop-up flows.
+     * Generic handler for OAuth flows using default browser.
      */
     handleOAuth: async (provider: "google" | "discord") => {
         set({ isLoading: true, error: null });
 
         try {
-            // 1. Get the auth URL from your server (this is unchanged).
+            console.warn(`[OAUTH] Starting ${provider} OAuth process...`);
+
+            // Check if we're in Electron environment
+            if (typeof window === "undefined" || !window.api) {
+                throw new Error(
+                    "OAuth is only available in the desktop app. Please use the desktop version.",
+                );
+            }
+
+            // 1. Get hardware ID first
+            const hardwareId = await window.api.invoke("get-hardware-id");
+            console.warn(`[OAUTH] Hardware ID: ${hardwareId}`);
+
+            // 2. Get the auth URL from your server with hardwareId
             const urlResponse =
                 provider === "google"
-                    ? await apiClient.getGoogleAuthUrl()
-                    : await apiClient.getDiscordAuthUrl();
+                    ? await apiClient.getGoogleAuthUrl(hardwareId)
+                    : await apiClient.getDiscordAuthUrl(hardwareId);
+
+            console.warn(`[OAUTH] URL response:`, urlResponse);
 
             if (!urlResponse.success || !urlResponse.authUrl) {
                 throw new Error(urlResponse.message || `Could not get ${provider} auth URL.`);
             }
 
-            // 2. Call our new, robust IPC function. This handles everything.
-            const authResult = await window.api.openOAuthWindow(urlResponse.authUrl);
+            console.warn(`[OAUTH] Got auth URL: ${urlResponse.authUrl}`);
 
-            // THE FIX: Check for the full user object now.
-            if (authResult.success && authResult.token) {
-                // We got everything we need! No need for another API call.
-                localStorage.setItem("auth_token", authResult.token);
-                // Directly set the user state from the result.
+            // 3. Open the URL in the default browser
+            console.warn(`[OAUTH] Opening OAuth URL in default browser...`);
+            const authResult = (await window.api.openOAuthWindow(urlResponse.authUrl)) as any;
+            console.warn(`[OAUTH] IPC result:`, authResult);
+
+            if (authResult.success) {
+                console.warn(
+                    `[OAUTH] Browser opened successfully. User should complete OAuth in browser.`,
+                );
+
+                // Start polling BACKEND pending status using hardwareId for a robust, one-instance flow
+                const hardwareId = await window.api.invoke("get-hardware-id");
+                let pollCount = 0;
+                const maxPolls = 180; // 6 minutes at 2-second intervals
+                const pollInterval = setInterval(async () => {
+                    pollCount++;
+                    try {
+                        const status = await apiClient.getPendingAuthStatus(hardwareId);
+                        if (status.success && status.user && status.token) {
+                            clearInterval(pollInterval);
+                            localStorage.setItem("auth_token", status.token);
+                            set({
+                                user: status.user,
+                                isAuthenticated: true,
+                                isLoading: false,
+                                error: null,
+                                authFlowStatus: "idle",
+                            });
+                            return;
+                        }
+                    } catch {
+                        // Ignore errors in this context
+                    }
+                    if (pollCount >= maxPolls) {
+                        clearInterval(pollInterval);
+                        set({
+                            error: "OAuth authentication timeout. Please try again.",
+                            isLoading: false,
+                        });
+                    }
+                }, 2000);
+
                 set({
-                    isAuthenticated: true,
                     isLoading: false,
                     error: null,
                     authFlowStatus: "idle",
                 });
-            } else if (authResult.message && !authResult.message.includes("cancelled")) {
-                throw new Error(authResult.message);
+            } else {
+                throw new Error(authResult.message || "Failed to open OAuth URL in browser");
             }
         } catch (err: any) {
+            console.error(`[OAUTH] Error:`, err);
             set({ error: err.message || "OAuth process failed.", isLoading: false });
         }
 
@@ -305,5 +515,146 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     },
     discordLogin: async () => {
         await get().handleOAuth("discord");
+    },
+
+    // --- OAuth Callback Handling ---
+    /**
+     * Handles OAuth callback data received from the custom protocol
+     */
+    handleOAuthCallback: (data: string) => {
+        try {
+            console.warn(`[OAUTH CALLBACK] Received data: ${data}`);
+            const authData = JSON.parse(decodeURIComponent(data));
+
+            if (authData.success && authData.token && authData.user) {
+                // Store the token - ensure it's properly formatted
+                const token = authData.token.trim();
+                console.warn(`[OAUTH CALLBACK] Storing token: ${token.substring(0, 20)}...`);
+                localStorage.setItem("auth_token", token);
+
+                // Verify token was stored correctly
+                const storedToken = localStorage.getItem("auth_token");
+                console.warn(
+                    `[OAUTH CALLBACK] Stored token verification: ${storedToken ? storedToken.substring(0, 20) + "..." : "null"}`,
+                );
+
+                // Update auth state
+                set({
+                    user: authData.user,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null,
+                    authFlowStatus: "idle",
+                });
+
+                console.warn(
+                    `[OAUTH CALLBACK] Authentication successful for user: ${authData.user.email}`,
+                );
+
+                // Clear any existing error messages
+                setTimeout(() => {
+                    set({ error: null });
+                }, 1000);
+            } else {
+                // Handle error
+                set({
+                    error: authData.message || "OAuth authentication failed",
+                    isLoading: false,
+                    authFlowStatus: "idle",
+                });
+                console.error(`[OAUTH CALLBACK] Authentication failed: ${authData.message}`);
+            }
+        } catch (error) {
+            console.error("Error processing OAuth callback:", error);
+            set({
+                error: "Failed to process authentication callback",
+                isLoading: false,
+                authFlowStatus: "idle",
+            });
+        }
+    },
+
+    /**
+     * Initializes the OAuth callback listener
+     */
+    initializeOAuthListener: () => {
+        console.warn(`[OAUTH] Initializing OAuth callback listener...`);
+
+        // Check if window.api is available (Electron environment)
+        if (typeof window !== "undefined" && window.api) {
+            window.api.onOAuthCallback((data) => {
+                get().handleOAuthCallback(data);
+            });
+
+            // Listen for auth status check events (when user returns from browser)
+            window.api.onCheckAuthStatus(() => {
+                console.warn(`[OAUTH] Auth status check triggered - validating session...`);
+                get().validateSession();
+                // Also start polling as a fallback
+                get().pollForAuthStatus();
+            });
+            console.warn(`[OAUTH] OAuth callback listener initialized successfully`);
+        } else {
+            console.warn(
+                `[OAUTH] window.api not available - running in web mode or Electron not ready`,
+            );
+        }
+
+        // Add message listener for OAuth success from browser
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data && event.data.type === "OAUTH_SUCCESS") {
+                console.warn("[OAUTH] Received OAuth success message from browser");
+                const authDataString = encodeURIComponent(JSON.stringify(event.data.data));
+                get().handleOAuthCallback(authDataString);
+            }
+        };
+
+        window.addEventListener("message", handleMessage);
+
+        // Store the handler for cleanup
+        (window as any).__oauthMessageHandler = handleMessage;
+    },
+
+    /**
+     * Cleans up the OAuth callback listener
+     */
+    cleanupOAuthListener: () => {
+        console.warn(`[OAUTH] Cleaning up OAuth callback listener...`);
+
+        // Check if window.api is available
+        if (typeof window !== "undefined" && window.api) {
+            window.api.removeOAuthCallback();
+            window.api.removeCheckAuthStatus();
+            console.warn(`[OAUTH] OAuth callback listener cleaned up successfully`);
+        } else {
+            console.warn(`[OAUTH] window.api not available during cleanup`);
+        }
+
+        // Remove message listener
+        if ((window as any).__oauthMessageHandler) {
+            window.removeEventListener("message", (window as any).__oauthMessageHandler);
+            delete (window as any).__oauthMessageHandler;
+        }
+    },
+
+    // --- Setters for OAuth callback ---
+    setUser: (user) => set({ user }),
+    setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
+    setLoading: (isLoading) => set({ isLoading }),
+    setError: (error) => set({ error }),
+
+    // --- Manual refresh ---
+    manualRefreshAuth: async () => {
+        console.warn("[MANUAL REFRESH] Manually refreshing authentication status...");
+        try {
+            await get().validateSession();
+            if (get().isAuthenticated) {
+                console.warn("[MANUAL REFRESH] Authentication confirmed after manual refresh");
+            } else {
+                console.warn("[MANUAL REFRESH] No authentication found after manual refresh");
+            }
+        } catch (error) {
+            console.error("[MANUAL REFRESH] Error during manual refresh:", error);
+        }
     },
 }));

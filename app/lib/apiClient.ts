@@ -1,7 +1,5 @@
 // Modern API client with TypeScript support
-const API_URL =
-    (typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_URL) ||
-    "http://localhost:5000/api/v1";
+const API_URL = "http://localhost:5000/api/v1";
 
 // Types
 interface ApiResponse<T = any> {
@@ -12,6 +10,7 @@ interface ApiResponse<T = any> {
     user?: any;
     authUrl?: string;
     error?: string;
+    requiresOtp?: boolean;
 }
 
 interface User {
@@ -35,6 +34,11 @@ async function apiRequest<T = any>(
 
         if (token) {
             defaultHeaders["Authorization"] = `Bearer ${token}`;
+            console.warn(
+                `[API REQUEST] Adding Authorization header: Bearer ${token.substring(0, 20)}...`,
+            );
+        } else {
+            console.warn(`[API REQUEST] No token found in localStorage`);
         }
 
         const config: RequestInit = {
@@ -45,8 +49,13 @@ async function apiRequest<T = any>(
             ...options,
         };
 
+        console.warn(`[API REQUEST] Making request to: ${API_URL}${endpoint}`);
+        console.warn(`[API REQUEST] Headers:`, config.headers);
+
         const response = await fetch(`${API_URL}${endpoint}`, config);
         const data = await response.json();
+
+        console.warn(`[API REQUEST] Response:`, data);
 
         return {
             success: response.ok,
@@ -66,7 +75,7 @@ async function apiRequest<T = any>(
 export async function signUp(
     email: string,
     password: string,
-    hardwareId: string,
+    hardwareId?: string,
 ): Promise<ApiResponse> {
     return apiRequest("/signup", {
         method: "POST",
@@ -81,10 +90,17 @@ export async function verifyOtp(email: string, otp: string): Promise<ApiResponse
     });
 }
 
+export async function resendOtp(email: string): Promise<ApiResponse> {
+    return apiRequest("/resend-otp", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+    });
+}
+
 export async function signIn(
     email: string,
     password: string,
-    hardwareId: string,
+    hardwareId?: string,
 ): Promise<ApiResponse> {
     return apiRequest("/login", {
         method: "POST",
@@ -105,15 +121,26 @@ export async function resetPassword(email: string, newPassword: string): Promise
         body: JSON.stringify({ email, newPassword }),
     });
 }
+
 // OAuth functions
-export async function getGoogleAuthUrl(): Promise<ApiResponse> {
-    return apiRequest("/auth/google", {
+export async function getGoogleAuthUrl(hardwareId?: string): Promise<ApiResponse> {
+    console.warn(`[API] Requesting Google auth URL with hardwareId: ${hardwareId}`);
+    const params = hardwareId ? `?hardwareId=${encodeURIComponent(hardwareId)}` : "";
+    const response = await apiRequest(`/auth/google${params}`, {
         method: "GET",
     });
+    console.warn(`[API] Google auth URL response:`, response);
+    return response;
 }
 
-export async function getDiscordAuthUrl(): Promise<ApiResponse> {
-    return apiRequest("/auth/discord");
+export async function getDiscordAuthUrl(hardwareId?: string): Promise<ApiResponse> {
+    console.warn(`[API] Requesting Discord auth URL with hardwareId: ${hardwareId}`);
+    const params = hardwareId ? `?hardwareId=${encodeURIComponent(hardwareId)}` : "";
+    const response = await apiRequest(`/auth/discord${params}`, {
+        method: "GET",
+    });
+    console.warn(`[API] Discord auth URL response:`, response);
+    return response;
 }
 
 export async function handleOAuthCallback(
@@ -129,13 +156,35 @@ export async function handleOAuthCallback(
     return apiRequest(`/auth/${provider}/callback?${params.toString()}`);
 }
 
+// Poll pending OAuth result for desktop app using hardwareId/state
+export async function getPendingAuthStatus(
+    hardwareId: string,
+    state?: string,
+): Promise<ApiResponse> {
+    const params = new URLSearchParams();
+    if (hardwareId) params.append("hardwareId", hardwareId);
+    if (state) params.append("state", state);
+    return apiRequest(`/auth/pending?${params.toString()}`, { method: "GET" });
+}
+
 // Token validation
 export async function validateToken(): Promise<ApiResponse> {
+    const token = localStorage.getItem("auth_token");
+    console.warn(
+        `[VALIDATE TOKEN] Token from localStorage: ${token ? token.substring(0, 20) + "..." : "null"}`,
+    );
+
+    if (!token) {
+        console.warn(`[VALIDATE TOKEN] No token found in localStorage`);
+        return {
+            success: false,
+            message: "No authentication token found",
+        };
+    }
+
+    // Don't add Authorization header here since apiRequest handles it automatically
     return apiRequest("/validate-token", {
         method: "GET",
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-        },
     });
 }
 

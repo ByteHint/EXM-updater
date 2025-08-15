@@ -4,6 +4,7 @@ import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "../ui/button";
 import AuthLayout from "./AuthLayout";
+import OtpStep from "./OptStep";
 import { useAuthStore } from "@/app/store/useAuthStore"; // Correct import path
 import { useShallow } from "zustand/react/shallow"; // 1. Import useShallow to prevent infinite loops
 
@@ -17,12 +18,21 @@ export default function SignIn({ onSwitchToSignUp, onSwitchToForgot }: SignInPro
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [otp, setOtp] = useState("");
     const [oauthLoading, setOauthLoading] = useState<"google" | "discord" | null>(null);
 
     // 2. FIX: Use `useShallow` to safely select multiple state properties and actions.
-    const { signIn, googleLogin, discordLogin, isLoading, error, clearError } = useAuthStore(
-        useShallow((state) => state),
-    );
+    const {
+        signIn,
+        verifyOtp,
+        googleLogin,
+        discordLogin,
+        isLoading,
+        error,
+        clearError,
+        authFlowStatus,
+        resetAuthFlow,
+    } = useAuthStore(useShallow((state) => state));
 
     // The component's job is just to call the action from the store.
     const handleSignIn = async (e: React.FormEvent) => {
@@ -33,6 +43,15 @@ export default function SignIn({ onSwitchToSignUp, onSwitchToForgot }: SignInPro
         // It simply tells the store to "sign in". The store is now responsible for
         // getting the hardware ID itself before making the API call.
         await signIn(email, password);
+    };
+
+    const handleOtpSubmit = async () => {
+        await verifyOtp(otp);
+    };
+
+    const handleGoBack = () => {
+        resetAuthFlow();
+        setOtp("");
     };
 
     // The OAuth handlers are also simplified.
@@ -52,6 +71,21 @@ export default function SignIn({ onSwitchToSignUp, onSwitchToForgot }: SignInPro
         if (error) clearError();
         setPassword(e.target.value);
     };
+
+    // Show OTP step if we're awaiting OTP verification
+    if (authFlowStatus === "awaiting-otp") {
+        return (
+            <AuthLayout title="Check your email">
+                <OtpStep
+                    email={email}
+                    otp={otp}
+                    setOtp={setOtp}
+                    onSubmit={handleOtpSubmit}
+                    onGoBack={handleGoBack}
+                />
+            </AuthLayout>
+        );
+    }
 
     return (
         <AuthLayout title="Sign In to EXM Tweaks">
@@ -127,7 +161,7 @@ export default function SignIn({ onSwitchToSignUp, onSwitchToForgot }: SignInPro
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                            className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                             disabled={isLoading}
                         >
                             {showPassword ? (

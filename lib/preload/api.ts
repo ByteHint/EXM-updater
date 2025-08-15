@@ -18,6 +18,18 @@ const api = {
     ): Promise<{ success: boolean; token?: string; message?: string }> => {
         return ipcRenderer.invoke("open-oauth-window", url);
     },
+    onOAuthCallback: (callback: (data: string) => void) => {
+        ipcRenderer.on("oauth-callback", (_, data) => callback(data));
+    },
+    removeOAuthCallback: () => {
+        ipcRenderer.removeAllListeners("oauth-callback");
+    },
+    onCheckAuthStatus: (callback: () => void) => {
+        ipcRenderer.on("check-auth-status", () => callback());
+    },
+    removeCheckAuthStatus: () => {
+        ipcRenderer.removeAllListeners("check-auth-status");
+    },
 };
 
 export default api;

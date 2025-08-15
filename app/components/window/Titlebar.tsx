@@ -69,6 +69,12 @@ const TitlebarControls = () => {
 
 const TitlebarControlButton = ({ svgPath, label }: { svgPath: string; label: string }) => {
     const handleAction = () => {
+        // Check if we're in Electron environment
+        if (typeof window === "undefined" || !window.api) {
+            console.warn(`Window control action '${label}' not available in web mode`);
+            return;
+        }
+
         switch (label) {
             case "minimize":
                 window.api.invoke("window-minimize");

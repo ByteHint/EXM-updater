@@ -1,17 +1,35 @@
 // app/App.tsx (Corrected)
 
+import { useEffect } from "react";
 import AppRouter from "./router/AppRouter";
 import { useAuthStore } from "@/app/store/useAuthStore";
 import { useShallow } from "zustand/react/shallow"; // 1. Import useShallow
 
 function AppContent() {
     // 2. Wrap the selector with useShallow to prevent the infinite loop
-    const { isLoading, error } = useAuthStore(
-        useShallow((state) => ({
-            isLoading: state.isLoading,
-            error: state.error,
-        })),
-    );
+    const { isLoading, error, validateSession, initializeOAuthListener, cleanupOAuthListener } =
+        useAuthStore(
+            useShallow((state) => ({
+                isLoading: state.isLoading,
+                error: state.error,
+                validateSession: state.validateSession,
+                initializeOAuthListener: state.initializeOAuthListener,
+                cleanupOAuthListener: state.cleanupOAuthListener,
+            })),
+        );
+
+    // Initialize OAuth listener and validate session on app start
+    useEffect(() => {
+        console.warn("[APP] Initializing app...");
+        initializeOAuthListener();
+        validateSession();
+
+        // Cleanup on unmount
+        return () => {
+            console.warn("[APP] Cleaning up app...");
+            cleanupOAuthListener();
+        };
+    }, [validateSession, initializeOAuthListener, cleanupOAuthListener]);
 
     // The rest of this component is perfect and does not need to change.
     if (isLoading) {
@@ -36,7 +54,11 @@ function AppContent() {
         );
     }
 
-    return <AppRouter />;
+    return (
+        <>
+            <AppRouter />
+        </>
+    );
 }
 
 export default function App() {

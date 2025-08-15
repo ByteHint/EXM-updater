@@ -16,6 +16,7 @@ export default [
             ".eslintignore",
             ".eslintrc",
             ".prettierrc",
+            "tailwind.config.js",
         ],
     },
     eslint.configs.recommended,

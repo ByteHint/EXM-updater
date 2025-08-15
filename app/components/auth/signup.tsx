@@ -34,6 +34,7 @@ export default function SignUp({ onSwitchToSignIn }: SignUpProps) {
         clearError,
         authFlowStatus,
         resetAuthFlow,
+        flowEmail,
     } = useAuthStore(useShallow((state) => state));
 
     // --- Action Handlers ---
@@ -98,7 +99,7 @@ export default function SignUp({ onSwitchToSignIn }: SignUpProps) {
         return (
             <AuthLayout title="Check your email">
                 <OtpStep
-                    email={email}
+                    email={flowEmail || email}
                     otp={otp}
                     setOtp={setOtp}
                     onSubmit={handleOtpSubmit}
@@ -173,7 +174,7 @@ export default function SignUp({ onSwitchToSignIn }: SignUpProps) {
                             </Button>
                         </div>
                         {error && <p className="text-red-500 text-center text-sm mt-2">{error}</p>}
-                        <div className="flex flex-col gap-2 text-center text-sm">
+                        <div className="flex justify-center gap-2 text-center text-sm">
                             Already have an account?{" "}
                             <button
                                 onClick={onSwitchToSignIn}

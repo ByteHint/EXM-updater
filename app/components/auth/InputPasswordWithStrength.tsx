@@ -4,13 +4,13 @@ import { getPasswordStrength, getPasswordValidationStatus } from "./lib/validati
 type PasswordInputProps = {
     password: string;
     setPassword: (password: string) => void;
-    isDisabled?: boolean; // Optional prop to disable the input
+    _isDisabled?: boolean; // Optional prop to disable the input (prefixed with _ to indicate unused)
 };
 
 export default function PasswordInputWithStrength({
     password,
     setPassword,
-    isDisabled,
+    _isDisabled,
 }: PasswordInputProps) {
     const status = getPasswordValidationStatus(password);
     const strength = getPasswordStrength(password);
