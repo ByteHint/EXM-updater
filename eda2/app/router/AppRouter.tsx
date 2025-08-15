@@ -47,7 +47,7 @@ const AppRouter: React.FC = () => {
         <Routes>
             {/* Public routes are nested under the PublicRoute layout */}
             <Route element={<PublicRoute />}>
-                <Route path="/welcome" element={<Welcome />} />
+                <Route path="/welcome" element={<Dashboard />} />
                 {/* You can add other public routes like /signup here */}
             </Route>
 
