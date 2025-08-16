@@ -46,7 +46,8 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
     const mainMenuItems = [
         { label: "General", icon: LayoutDashboard, premium: false },
         { label: "Hardware", icon: Cpu, premium: false },
-        { label: "Debloat", icon: BrushCleaning, premium: false },
+        // Replaced missing BrushCleaning icon with Wrench
+        { label: "Debloat", icon: Wrench, premium: false },
         { label: "Network", icon: Router, premium: false },
         { label: "EXM Game Mode", icon: Gamepad, premium: true },
         { label: "Advanced", icon: Rocket, premium: true },

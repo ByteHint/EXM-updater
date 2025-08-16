@@ -7,6 +7,7 @@ import {
     Sparkles,
     Wand2,
     Cpu,
+    Wrench,
 } from "lucide-react";
 import { Button } from "../ui/button";
 
@@ -77,7 +78,7 @@ export const ActionItemsSection = ({ activeCategory = "general" }: ActionItemsSe
         debloat: {
             title: "Debloat",
             description: "Remove unnecessary apps and services.",
-            icon: BrushCleaning,
+            icon: Wrench,
         },
     };
 
