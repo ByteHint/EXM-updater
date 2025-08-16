@@ -10,7 +10,6 @@ import {
     Monitor,
     Keyboard,
     MemoryStick,
-    Wrench,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
@@ -36,8 +35,6 @@ export const NotificationSection = ({
         { id: "qol", label: "QOL", icon: Sparkles },
         { id: "apps", label: "Apps", icon: AppWindow },
         { id: "games", label: "Games", icon: Gamepad2 },
-        // Replaced missing BrushCleaning with Wrench
-        { id: "clean", label: "Clean", icon: Wrench },
     ];
 
     // Hardware
