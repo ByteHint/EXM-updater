@@ -8,17 +8,23 @@ import { useShallow } from "zustand/react/shallow"; // 1. Import useShallow
 
 function AppContent() {
     // 2. Wrap the selector with useShallow to prevent the infinite loop
-    const { isLoading, error, isAuthenticated, validateSession, initializeOAuthListener, cleanupOAuthListener } =
-        useAuthStore(
-            useShallow((state) => ({
-                isLoading: state.isLoading,
-                error: state.error,
-                isAuthenticated: state.isAuthenticated,
-                validateSession: state.validateSession,
-                initializeOAuthListener: state.initializeOAuthListener,
-                cleanupOAuthListener: state.cleanupOAuthListener,
-            })),
-        );
+    const {
+        isLoading,
+        error,
+        isAuthenticated,
+        validateSession,
+        initializeOAuthListener,
+        cleanupOAuthListener,
+    } = useAuthStore(
+        useShallow((state) => ({
+            isLoading: state.isLoading,
+            error: state.error,
+            isAuthenticated: state.isAuthenticated,
+            validateSession: state.validateSession,
+            initializeOAuthListener: state.initializeOAuthListener,
+            cleanupOAuthListener: state.cleanupOAuthListener,
+        })),
+    );
 
     const navigate = useNavigate();
 
