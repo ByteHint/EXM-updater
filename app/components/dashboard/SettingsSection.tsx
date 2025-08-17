@@ -291,13 +291,12 @@ export const SettingsSection = ({
 
         // Monitor Settings
         {
-            title: "Enable Adaptive Refresh Rate",
-            description:
-                "Reduce screen tearing by syncing refresh rate with frame output dynamically.",
+            title: "Custom NVIDIA driver",
+            description: "Increase mouse responsiveness and accuracy by prioritizing essential system",
             alertCount: 0,
             isEnabled: true,
-            category: "monitor",
             hasConfigure: true,
+            category: "monitor",
         },
         {
             title: "Calibrate Display Colors",
@@ -1132,6 +1131,38 @@ const SettingCard = ({
     const [customValue, setCustomValue] = useState(0.4);
     const [isEditingCustom, setIsEditingCustom] = useState(false);
 
+    // Workflow for special "Custom NVIDIA driver" modal
+    const isCustomNvidia = title === "Custom NVIDIA driver";
+    const [installState, setInstallState] = useState<
+        "config" | "installing" | "success" | "error"
+    >("config");
+    const [installProgress, setInstallProgress] = useState(0);
+    const [nvidiaOpt1, setNvidiaOpt1] = useState(true);
+    const [nvidiaOpt2, setNvidiaOpt2] = useState(true);
+    const [nvidiaOpt3, setNvidiaOpt3] = useState(false);
+
+    useEffect(() => {
+        if (!isCustomNvidia) return;
+        let intervalId: ReturnType<typeof setInterval> | undefined;
+        if (installState === "installing") {
+            setInstallProgress(0);
+            intervalId = setInterval(() => {
+                setInstallProgress((prev) => {
+                    const inc = Math.floor(Math.random() * 12) + 4; // 4-15%
+                    const next = Math.min(prev + inc, 100);
+                    if (next >= 100) {
+                        if (intervalId) clearInterval(intervalId);
+                        setTimeout(() => setInstallState("success"), 400);
+                    }
+                    return next;
+                });
+            }, 350);
+        }
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [installState, isCustomNvidia]);
+
     const handleOptimize = async () => {
         if (optimizeState === "idle") {
             setOptimizeState("optimizing");
@@ -1315,8 +1346,167 @@ const SettingCard = ({
                                         </button>
                                         {isOpen && (
                                             <div className="fixed inset-0 backdrop-blur-xs flex justify-center items-center z-50">
-                                                {/* Popup Box */}
-                                                <div className="w-[380px] h-[488px] bg-[#14141E] text-white p-6 rounded-lg shadow-lg">
+                                                {isCustomNvidia ? (
+                                                    installState === "config" ? (
+                                                        <div className="w-[420px] h-[394px] bg-[#14141E] text-white p-6 rounded-lg shadow-lg">
+                                                            <div className="flex items-center justify-between mb-4">
+                                                                <h2 className="text-lg font-bold">Custom NVIDIA driver</h2>
+                                                                <button type="button" aria-label="Close" onClick={() => { setIsOpen(false); setInstallState("config"); }} className="p-1 rounded-md text-[#81818C] hover:text-white hover:bg-[#1A1A24] transition">
+                                                                    <X className="w-4 h-4 text-[#282832] hover:text-white cursor-pointer" />
+                                                                </button>
+                                                            </div>
+
+                                                            <Separator className="mb-4 h-px border-[0.75px] border-dashed border-gray-100/10 bg-transparent" />
+
+                                                            <p className="mb-4 text-sm text-[#A1A1B2]">Boosts performance by prioritizing essential system tasks over less important ones.</p>
+
+                                                            <Separator className="mb-5 h-px border-[0.75px] border-dashed border-gray-100/10 bg-transparent" />
+
+                                                            <p className="mb-3 text-sm">Configure</p>
+                                                            <div className="space-y-3">
+                                                                <label className="flex items-center justify-between text-sm">
+                                                                    <span className="text-[#81818C]">Option one</span>
+                                                                    <Switch checked={nvidiaOpt1} onCheckedChange={() => setNvidiaOpt1(!nvidiaOpt1)} className="data-[state=checked]:bg-pink-500 data-[state=unchecked]:bg-gray-600" />
+                                                                </label>
+                                                                <label className="flex items-center justify-between text-sm">
+                                                                    <span className="text-[#81818C]">Option two</span>
+                                                                    <Switch checked={nvidiaOpt2} onCheckedChange={() => setNvidiaOpt2(!nvidiaOpt2)} className="data-[state=checked]:bg-pink-500 data-[state=unchecked]:bg-gray-600" />
+                                                                </label>
+                                                                <label className="flex items-center justify-between text-sm mb-4">
+                                                                    <span className="text-[#81818C]">Option three</span>
+                                                                    <Switch checked={nvidiaOpt3} onCheckedChange={() => setNvidiaOpt3(!nvidiaOpt3)} className="data-[state=checked]:bg-pink-500 data-[state=unchecked]:bg-gray-600" />
+                                                                </label>
+                                                            </div>
+
+                                                            <Separator className="mb-7 mt-6 h-px border-[0.75px] border-dashed border-gray-100/10 bg-transparent" />
+
+                                                            <div className="mt-5">
+                                                                <button onClick={() => setInstallState("installing")} className="w-full flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-500 text-[#0A0A14] text-sm px-6 py-2 rounded-md transition cursor-pointer">Install Driver</button>
+                                                            </div>
+                                                        </div>
+                                                    ) : installState === "installing" ? (
+                                                        <div className="w-[320px] h-[394px] bg-[#14141E] text-white p-6 rounded-lg shadow-lg flex flex-col">
+                                                            <div className="flex items-center justify-between mb-4">
+                                                                <h2 className="text-lg font-bold">Custom NVIDIA driver</h2>
+                                                                <button
+                                                                    type="button"
+                                                                    aria-label="Close"
+                                                                    onClick={() => {
+                                                                        setIsOpen(false);
+                                                                        setInstallState("config");
+                                                                    }}
+                                                                    className="p-1 rounded-md text-[#81818C] hover:text-white hover:bg-[#1A1A24] transition"
+                                                                >
+                                                                    <X className="w-4 h-4 text-[#282832] hover:text-white cursor-pointer" />
+                                                                </button>
+                                                            </div>
+
+                                                            <Separator className="mb-4 h-px border-[0.75px] border-dashed border-gray-100/10 bg-transparent" />
+
+                                                            <div className="flex items-center justify-center my-4">
+                                                                    <div className="relative w-16 h-16 mb-3 mt-10 mx-auto">
+                                                                        <div className="absolute inset-0 rounded-full border-4 border-[#232333]" />
+                                                                        <div className="absolute inset-0 rounded-full border-4 border-[#818CF8] border-t-transparent animate-spin" />
+                                                                        <div className="absolute inset-0 flex items-center justify-center text-base font-medium">
+                                                                            {installProgress}%
+                                                                        </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <p className="text-xs text-[#A1A1B2] mb-18 text-center">Downloading and installing. Please wait...</p>
+
+                                                            <Separator className="mb-4 h-px border-[0.75px] border-dashed border-gray-100/10 bg-transparent" />
+
+                                                            <button
+                                                                onClick={() => {
+                                                                    setIsOpen(false);
+                                                                    setInstallState("config");
+                                                                }}
+                                                                className="w-full px-4 py-2 bg-[#1A1A24] hover:bg-[#222231] rounded-md text-xs"
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        </div>
+                                                    ) : installState === "success" ? (
+                                                        <div className="w-[320px] h-[394px] bg-[#14141E] text-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+                                                            <div className="flex items-center justify-between w-full mb-4">
+                                                                <h2 className="text-lg font-bold">Custom NVIDIA driver</h2>
+                                                                <button
+                                                                    type="button"
+                                                                    aria-label="Close"
+                                                                    onClick={() => {
+                                                                        setIsOpen(false);
+                                                                        setInstallState("config");
+                                                                    }}
+                                                                    className="p-1 rounded-md text-[#81818C] hover:text-white hover:bg-[#1A1A24] transition"
+                                                                >
+                                                                    <X className="w-4 h-4 text-[#282832] hover:text-white cursor-pointer" />
+                                                                </button>
+                                                            </div>
+
+                                                            <Separator className="mb-4 h-px border-[0.75px] border-dashed border-gray-100/10 bg-transparent" />
+
+                                                            <div className="w-18 h-18 rounded-full bg-[#0A1F14] flex items-center justify-center mb-3 mt-10">
+                                                            <svg width="86" height="87" viewBox="0 0 86 87" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M86 43.5C86 67.2482 66.7482 86.5 43 86.5C19.2518 86.5 0 67.2482 0 43.5C0 19.7518 19.2518 0.5 43 0.5C66.7482 0.5 86 19.7518 86 43.5ZM4.3 43.5C4.3 64.8734 21.6266 82.2 43 82.2C64.3734 82.2 81.7 64.8734 81.7 43.5C81.7 22.1266 64.3734 4.8 43 4.8C21.6266 4.8 4.3 22.1266 4.3 43.5Z" fill="#282832"/>
+                                                                    <path d="M86 43.5C86 67.2482 66.7482 86.5 43 86.5C19.2518 86.5 0 67.2482 0 43.5C0 19.7518 19.2518 0.5 43 0.5C66.7482 0.5 86 19.7518 86 43.5ZM4.3 43.5C4.3 64.8734 21.6266 82.2 43 82.2C64.3734 82.2 81.7 64.8734 81.7 43.5C81.7 22.1266 64.3734 4.8 43 4.8C21.6266 4.8 4.3 22.1266 4.3 43.5Z" fill="#05DF72"/>
+                                                                    <path d="M33.6665 47.3333C33.6665 47.3333 35.6665 47.3333 38.3332 52C38.3332 52 45.7449 39.7778 52.3332 37.3333" stroke="#05DF72" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                                    </svg>
+                                                            </div>
+                                                            <p className="text-xs text-[#A1A1B2] mt-5 mb-18 text-center">Driver successfully installed. Please restart to apply.</p>
+
+                                                            <Separator className="mb-4 h-px border-[0.75px] border-dashed border-gray-100/10 bg-transparent" />
+
+                                                            <button
+                                                                onClick={() => {
+                                                                    setIsOpen(false);
+                                                                    setInstallState("config");
+                                                                }}
+                                                                className="w-full px-4 py-2 bg-pink-600 hover:bg-pink-500 rounded-md text-[#0A0A14] text-xs"
+                                                            >
+                                                                Restart now
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-[320px] h-[394px] bg-[#14141E] text-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+                                                        <div className="flex items-center justify-between w-full mb-4">
+                                                            <h2 className="text-lg font-bold">Custom NVIDIA driver</h2>
+                                                            <button
+                                                                type="button"
+                                                                aria-label="Close"
+                                                                onClick={() => {
+                                                                    setIsOpen(false);
+                                                                    setInstallState("config");
+                                                                }}
+                                                                className="p-1 rounded-md text-[#81818C] hover:text-white hover:bg-[#1A1A24] transition"
+                                                            >
+                                                                <X className="w-4 h-4 text-[#282832] hover:text-white cursor-pointer" />
+                                                            </button>
+                                                        </div>
+
+                                                        <Separator className="mb-4 h-px border-[0.75px] border-dashed border-gray-100/10 bg-transparent" />
+
+                                                            <div className="w-18 h-18 rounded-full bg-[#0A1F14] flex items-center justify-center mb-3 mt-10">
+                                                            <svg width="86" height="87" viewBox="0 0 86 87" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M86 43.5C86 67.2482 66.7482 86.5 43 86.5C19.2518 86.5 0 67.2482 0 43.5C0 19.7518 19.2518 0.5 43 0.5C66.7482 0.5 86 19.7518 86 43.5ZM4.3 43.5C4.3 64.8734 21.6266 82.2 43 82.2C64.3734 82.2 81.7 64.8734 81.7 43.5C81.7 22.1266 64.3734 4.8 43 4.8C21.6266 4.8 4.3 22.1266 4.3 43.5Z" fill="#282832"/>
+                                                                <path d="M86 43.5C86 67.2482 66.7482 86.5 43 86.5C19.2518 86.5 0 67.2482 0 43.5C0 19.7518 19.2518 0.5 43 0.5C66.7482 0.5 86 19.7518 86 43.5ZM4.3 43.5C4.3 64.8734 21.6266 82.2 43 82.2C64.3734 82.2 81.7 64.8734 81.7 43.5C81.7 22.1266 64.3734 4.8 43 4.8C21.6266 4.8 4.3 22.1266 4.3 43.5Z" fill="#FB2C36"/>
+                                                                <path d="M51 36L35.0011 51.9989M50.9989 52L35 36.0011" stroke="#FB2C36" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                             </svg>
+                                                            </div>
+                                                        <p className="text-xs text-[#A1A1B2] mt-5 mb-18 text-center">Failed to install. Please try again.</p>
+
+                                                        <Separator className="mb-4 h-px border-[0.75px] border-dashed border-gray-100/10 bg-transparent" />
+
+                                                        <button
+                                                            onClick={() => setInstallState("installing")}
+                                                            className="w-full px-4 py-2 bg-pink-600 hover:bg-pink-500 rounded-md text-[#0A0A14] text-xs"
+                                                        >
+                                                            Try again
+                                                        </button>
+                                                    </div>
+                                                    )
+                                                ) : (
+                                                    <div className="w-[380px] h-[488px] bg-[#14141E] text-white p-6 rounded-lg shadow-lg">
                                                     <div className="flex items-center justify-between mb-4">
                                                         <h2 className="text-lg font-bold">
                                                             {title}
@@ -1486,14 +1676,10 @@ const SettingCard = ({
                                                     )}
                                                     {/* Actions */}
                                                     <div className="flex justify-center gap-3 mt-4">
-                                                        <button
-                                                            onClick={() => setIsOpen(false)}
-                                                            className="px-4 py-2 bg-pink-600 rounded-lg hover:bg-gray-400 w-full text-[#0A0A14] text-sm cursor-pointer"
-                                                        >
-                                                            Apply
-                                                        </button>
+                                                        <button onClick={() => setIsOpen(false)} className="px-4 py-2 bg-pink-600 rounded-lg hover:bg-gray-400 w-full text-[#0A0A14] text-sm cursor-pointer">Apply</button>
                                                     </div>
                                                 </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
