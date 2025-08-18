@@ -1,7 +1,6 @@
 // app/App.tsx (Corrected)
 
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import AppRouter from "./router/AppRouter";
 import { useAuthStore } from "@/app/store/useAuthStore";
 import { useShallow } from "zustand/react/shallow"; // 1. Import useShallow
@@ -26,8 +25,6 @@ function AppContent() {
         })),
     );
 
-    const navigate = useNavigate();
-
     // Initialize OAuth listener and validate session on app start
     useEffect(() => {
         console.warn("[APP] Initializing app...");
@@ -41,15 +38,7 @@ function AppContent() {
         };
     }, [validateSession, initializeOAuthListener, cleanupOAuthListener]);
 
-    // Ensure we land on the correct route after auth state changes
-    useEffect(() => {
-        if (isLoading) return;
-        if (isAuthenticated) {
-            navigate("/dashboard", { replace: true });
-        } else {
-            navigate("/welcome", { replace: true });
-        }
-    }, [isAuthenticated, isLoading, navigate]);
+    // Routing is handled by the router guards; avoid forced navigations here to prevent flicker
 
     // The rest of this component is perfect and does not need to change.
     if (isLoading) {
