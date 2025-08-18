@@ -8,7 +8,6 @@ import { useAuthStore } from "@/app/store/useAuthStore"; // Corrected import pat
 import Dashboard from "@/app/components/dashboard/Dashboard"; // Assuming paths
 import Welcome from "@/app/components/welcome/Welcome";
 import OAuthCallback from "@/app/components/auth/OAuthCallback";
-import Pricing from "@/app/components/pricing/Pricing";
 // import TweaksPage from "@/components/tweaks/TweaksPage"; // Example for a new page
 // import SettingsPage from "@/components/settings/SettingsPage";
 // import ProfilePage from "@/components/profile/ProfilePage";
@@ -59,7 +58,6 @@ const AppRouter: React.FC = () => {
             {/* Protected routes are nested under the ProtectedRoute layout */}
             <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/pricing" element={<Pricing />} />
                 {/* <Route path="/tweaks" element={<TweaksPage />} />
         <Route path="/tweaks/:category" element={<TweaksCategoryPage />} />
         <Route path="/settings" element={<SettingsPage />} />
