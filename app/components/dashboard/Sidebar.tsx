@@ -1,10 +1,13 @@
 import {
+    ArrowUpRight,
     ChevronDown,
     Cpu,
     Download,
     Gamepad,
+    Globe,
     Home,
     LayoutDashboard,
+    LogOut,
     PanelLeft,
     PanelRight,
     Rocket,
@@ -15,8 +18,9 @@ import {
     SquareSlash,
     WandSparkles,
     Wrench,
+    X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
@@ -31,6 +35,33 @@ interface SidebarProps {
 export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [activeSection, setActiveSection] = useState("General");
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const profileCardRef = useRef<HTMLDivElement>(null);
+
+    // Handle clicking outside to close dropdown
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node) &&
+                profileCardRef.current &&
+                !profileCardRef.current.contains(event.target as Node)
+            ) {
+                setIsProfileDropdownOpen(false);
+            }
+        };
+
+        if (isProfileDropdownOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isProfileDropdownOpen]);
 
     const handleToggle = (collapsed: boolean) => {
         setIsCollapsed(collapsed);
@@ -41,6 +72,54 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
         console.warn("Sidebar: Section clicked:", section);
         setActiveSection(section);
         onSectionChange?.(section);
+    };
+
+    const handleProfileClick = () => {
+        setIsProfileDropdownOpen(!isProfileDropdownOpen);
+    };
+
+    const handleLogout = () => {
+        setShowLogoutModal(true);
+        setIsProfileDropdownOpen(false);
+    };
+
+    const handleConfirmLogout = () => {
+        // Add logout logic here
+        console.log("Logging out...");
+        setShowLogoutModal(false);
+    };
+
+    const handleCancelLogout = () => {
+        setShowLogoutModal(false);
+    };
+
+    const handleUpgradeClick = () => {
+        // Add upgrade logic here
+        console.log("Upgrading to premium...");
+        setIsProfileDropdownOpen(false);
+    };
+
+    const handleMenuItemClick = (action: string) => {
+        console.log(`Menu item clicked: ${action}`);
+        setIsProfileDropdownOpen(false);
+
+        if (action === "leave-review") {
+            setShowReviewModal(true);
+        }
+    };
+
+    const handleCloseReviewModal = () => {
+        setShowReviewModal(false);
+    };
+
+    const handleDiscordReview = () => {
+        window.open("https://discord.gg/pigeon", "_blank");
+        setShowReviewModal(false);
+    };
+
+    const handleWebsiteReview = () => {
+        window.open("https://pigeon.os/review", "_blank");
+        setShowReviewModal(false);
     };
 
     const mainMenuItems = [
@@ -81,7 +160,11 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
                     className={`transition-opacity duration-200 ${isCollapsed ? "opacity-0" : "opacity-100"}`}
                 >
                     <div className="flex justify-between items-center px-5 py-3">
-                        <img className="w-[55px] h-[27px]" alt="Logo" src="res://icons/logo.png" />
+                        <img
+                            className="res://icons/reset-password.svgw-[55px] h-[27px]"
+                            alt="Logo"
+                            src="res://icons/logo.png"
+                        />
                         <Button
                             onClick={() => handleToggle(true)}
                             className="w-8 h-8 p-0 hover:bg-[#1a1a24] rounded-md transition-colors"
@@ -179,6 +262,7 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
                         <Button
                             variant="ghost"
                             className="flex items-center gap-3 p-0 hover:bg-transparent"
+                            onClick={handleUpgradeClick}
                         >
                             <Sparkles className="w-3 h-3 text-pink-400" />
                             <span className="text-sm font-semibold text-transparent bg-gradient-to-r from-indigo-500 to-pink-500 bg-clip-text">
@@ -186,28 +270,220 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
                             </span>
                         </Button>
                     </div>
-
-                    {/* User Profile */}
-                    <Card className="absolute w-[216px] h-14 bottom-[20px] p-0 left-3 bg-[#1e1e28] rounded-xl border border-[#2a2a36]">
-                        <CardContent className="p-0">
-                            <div className="flex items-center gap-3 p-2">
-                                <Avatar className="w-10 h-10">
-                                    <AvatarFallback>P</AvatarFallback>
-                                </Avatar>
-                                <div className="flex items-center justify-between flex-1">
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-medium text-white">
-                                            Pigeon
-                                        </span>
-                                        <span className="text-xs text-gray-500">Free User</span>
+                    <div className="absolute bottom-[20px] left-3 flex items-center">
+                        {/* User Profile */}
+                        <Card
+                            ref={profileCardRef}
+                            className={`w-[216px] h-14 p-0 bg-[#1e1e28] rounded-xl border border-[#2a2a36] cursor-pointer transition-all duration-200 hover:bg-[#2a2a36] hover:border-[#3a3a46] ${isProfileDropdownOpen ? "bg-[#2a2a36] border-[#3a3a46]" : ""}`}
+                            onClick={handleProfileClick}
+                        >
+                            <CardContent className="p-0">
+                                <div className="flex items-center gap-3 p-2">
+                                    <Avatar className="w-10 h-10">
+                                        <AvatarFallback>P</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex items-center justify-between flex-1">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-white">
+                                                Pigeon
+                                            </span>
+                                            <span className="text-xs text-gray-500">Free User</span>
+                                        </div>
+                                        <ChevronDown
+                                            className={`w-3.5 h-3.5 text-gray-500 transition-transform duration-200 ${isProfileDropdownOpen ? "rotate-180" : ""}`}
+                                        />
                                     </div>
-                                    <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Dropdown Menu */}
+                        {isProfileDropdownOpen && (
+                            <Card
+                                ref={dropdownRef}
+                                className="absolute bottom-0 left-[calc(100%+24px)] py-4 w-60 bg-[#1A1A24] border border-[#332E474D] z-[100] shadow-xl animate-in slide-in-from-top-2 duration-200"
+                            >
+                                <CardContent className="flex flex-col px-2 max-h-fit">
+                                    <div className="flex items-center pb-4 gap-2 border-b border-gray-700/30">
+                                        <Avatar className="w-10 h-10">
+                                            <AvatarFallback>P</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex items-center justify-between flex-1">
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium text-white">
+                                                    Pigeon
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    Free User
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <ul className="px-1.5 py-2 flex flex-col gap-1 border-b border-gray-700/30">
+                                        <li
+                                            className="flex items-center gap-2 text-gray-300 hover:text-white cursor-pointer transition-colors duration-200 hover:bg-[#2a2a36] py-2 px-2 rounded-lg"
+                                            onClick={() => handleMenuItemClick("settings")}
+                                        >
+                                            <Settings size={20} color="#81818C" />
+                                            Settings
+                                        </li>
+                                        <li
+                                            className="flex items-center gap-2 text-gray-300 hover:text-white cursor-pointer transition-colors duration-200 hover:bg-[#2a2a36] py-2 px-2 rounded-lg"
+                                            onClick={() => handleMenuItemClick("hardware-resets")}
+                                        >
+                                            <img
+                                                src="res://icons/reset-password.svg"
+                                                className="w-5"
+                                            />
+                                            Hardware Resets
+                                        </li>
+                                        <li
+                                            className="flex items-center gap-2 text-gray-300 hover:text-white cursor-pointer transition-colors duration-200 hover:bg-[#2a2a36] py-2 px-2 rounded-lg"
+                                            onClick={() => handleMenuItemClick("leave-review")}
+                                        >
+                                            <img
+                                                src="res://icons/quill-write-02.svg"
+                                                className="w-5"
+                                            />
+                                            Leave a review
+                                        </li>
+                                        <li
+                                            className="flex items-center gap-2 text-gray-300 hover:text-white cursor-pointer transition-colors duration-200 hover:bg-[#2a2a36] py-2 px-2 rounded-lg"
+                                            onClick={handleUpgradeClick}
+                                        >
+                                            <Sparkles className="text-pink-400" size={20} />
+                                            <span className="text-sm font-semibold text-transparent bg-gradient-to-r from-indigo-500 to-pink-500 bg-clip-text">
+                                                Upgrade to Premium
+                                            </span>
+                                        </li>
+                                    </ul>
+                                    <ul className="px-1.5 py-2 flex flex-col gap-1">
+                                        <a
+                                            href="https://discord.gg/pigeon"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <li className="flex items-center justify-between gap-2 text-gray-300 hover:text-white cursor-pointer transition-colors duration-200 hover:bg-[#2a2a36] py-2 px-2 rounded-lg">
+                                                <div className="flex items-center gap-2">
+                                                    <img
+                                                        src="res://icons/discord.svg"
+                                                        className="w-5"
+                                                    />
+                                                    Join our Discord
+                                                </div>
+                                                <ArrowUpRight size={16} />
+                                            </li>
+                                        </a>
+                                        <a
+                                            href="https://pigeon.os/account"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <li className="flex items-center justify-between gap-2 text-gray-300 hover:text-white cursor-pointer transition-colors duration-200 hover:bg-[#2a2a36] py-2 px-2 rounded-lg">
+                                                <div className="flex items-center gap-2">
+                                                    <img
+                                                        src="res://icons/user-account.svg"
+                                                        className="w-5"
+                                                    />
+                                                    Account and Billing
+                                                </div>
+                                                <ArrowUpRight size={16} />
+                                            </li>
+                                        </a>
+                                    </ul>
+                                    <Button
+                                        variant="ghost"
+                                        className="w-full bg-[#1E1E28] text-white flex items-center justify-between hover:bg-[#2a2a36] transition-colors duration-200"
+                                        onClick={handleLogout}
+                                    >
+                                        Logout
+                                        <LogOut size={16} />
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+                </div>
+            </aside>
+
+            {/* Logout Confirmation Modal */}
+            {showLogoutModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-[200] flex items-center justify-center">
+                    <Card className="w-[420px] bg-[#1A1A24] border border-[#332E474D] shadow-2xl">
+                        <CardContent className="">
+                            <div className="text-center">
+                                <h3 className="text-lg font-semibold text-white mb-4">Log out?</h3>
+                                <Separator className="w-full h-px bg-gray-700/30 mb-4" />
+                                <p className="text-sm text-gray-300 mb-6">
+                                    Do you really want to log out? Your current settings will be
+                                    reverted.
+                                </p>
+                                <div className="flex gap-3">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1 bg-transparent border-gray-600 text-white hover:bg-gray-700"
+                                        onClick={handleCancelLogout}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                                        onClick={handleConfirmLogout}
+                                    >
+                                        Log out
+                                    </Button>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
-            </aside>
+            )}
+
+            {/* Review Modal */}
+            {showReviewModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-[200] flex items-center justify-center">
+                    <Card className="w-[420px] bg-[#1A1A24] border border-[#332E474D] shadow-2xl">
+                        <CardContent className="">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <img src="res://icons/quill-write-02.svg" className="w-5 h-5" />
+                                    <h3 className="text-lg font-semibold text-white">
+                                        Leave a review
+                                    </h3>
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-8 h-8 p-0 hover:bg-gray-700"
+                                    onClick={handleCloseReviewModal}
+                                >
+                                    <X className="w-4 h-4 text-gray-400" />
+                                </Button>
+                            </div>
+                            <p className="text-sm text-gray-300 mb-6">
+                                If you had a good experience with EXM Tweaks, a short review goes a
+                                long way. It really helps us out - thanks a ton!
+                            </p>
+                            <div className="space-y-3">
+                                <Button
+                                    className="w-full bg-[#FF2E79] hover:bg-[#FF2E79]/90 text-black flex items-center gap-2"
+                                    onClick={handleDiscordReview}
+                                >
+                                    <img src="res://icons/discord.svg" className="w-4 h-4" />
+                                    Leave review on Discord
+                                </Button>
+                                <Button
+                                    className="w-full bg-[#818CF8] hover:bg-[#818CF8]/90 text-black flex items-center gap-2"
+                                    onClick={handleWebsiteReview}
+                                >
+                                    <Globe className="w-4 h-4" />
+                                    Leave review on Website
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
         </>
     );
 }
