@@ -149,9 +149,9 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
     // Helper function to get user initials
     const getUserInitials = (name: string) => {
         return name
-            .split(' ')
-            .map(word => word.charAt(0))
-            .join('')
+            .split(" ")
+            .map((word) => word.charAt(0))
+            .join("")
             .toUpperCase()
             .slice(0, 2);
     };
@@ -176,15 +176,18 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
                 email: user.email,
                 name: user.name,
                 avatar: user.avatar,
-                authProvider: user.authProvider
+                authProvider: user.authProvider,
             });
-            
+
             if (user.avatar) {
                 console.log("Sidebar - Avatar URL analysis:", {
                     originalUrl: user.avatar,
                     isValidUrl: isValidAvatarUrl(user.avatar),
                     proxiedUrl: getProxiedAvatarUrl(user.avatar),
-                    isExternal: !user.avatar.startsWith('/') && !user.avatar.startsWith('http://localhost') && !user.avatar.startsWith('https://localhost')
+                    isExternal:
+                        !user.avatar.startsWith("/") &&
+                        !user.avatar.startsWith("http://localhost") &&
+                        !user.avatar.startsWith("https://localhost"),
                 });
             }
         }
@@ -199,7 +202,7 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
         setAvatarError(true);
         // Remove loading state
         const avatarUrl = event.currentTarget.src;
-        setAvatarLoadingStates(prev => ({ ...prev, [avatarUrl]: false }));
+        setAvatarLoadingStates((prev) => ({ ...prev, [avatarUrl]: false }));
     };
 
     // Helper function to handle avatar loading success
@@ -207,7 +210,7 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
         console.log("Avatar loaded successfully:", event.currentTarget.src);
         // Remove loading state
         const avatarUrl = event.currentTarget.src;
-        setAvatarLoadingStates(prev => ({ ...prev, [avatarUrl]: false }));
+        setAvatarLoadingStates((prev) => ({ ...prev, [avatarUrl]: false }));
     };
 
     // Helper function to check if avatar URL is valid
@@ -223,13 +226,17 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
 
     // Helper function to get proxied avatar URL
     const getProxiedAvatarUrl = (avatarUrl: string): string => {
-        if (!avatarUrl) return '';
-        
+        if (!avatarUrl) return "";
+
         // If it's already a relative URL or localhost, return as is
-        if (avatarUrl.startsWith('/') || avatarUrl.startsWith('http://localhost') || avatarUrl.startsWith('https://localhost')) {
+        if (
+            avatarUrl.startsWith("/") ||
+            avatarUrl.startsWith("http://localhost") ||
+            avatarUrl.startsWith("https://localhost")
+        ) {
             return avatarUrl;
         }
-        
+
         // For external URLs, use our proxy
         try {
             const encodedUrl = encodeURIComponent(avatarUrl);
@@ -380,7 +387,9 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
                             <CardContent className="p-0">
                                 <div className="flex items-center gap-3 p-2">
                                     <Avatar className="w-10 h-10 relative">
-                                        {user?.avatar && isValidAvatarUrl(user.avatar) && !avatarError ? (
+                                        {user?.avatar &&
+                                        isValidAvatarUrl(user.avatar) &&
+                                        !avatarError ? (
                                             <>
                                                 <AvatarImage
                                                     src={getProxiedAvatarUrl(user.avatar)}
@@ -426,7 +435,9 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
                                 <CardContent className="flex flex-col px-2 max-h-fit">
                                     <div className="flex items-center pb-4 gap-2 border-b border-gray-700/30">
                                         <Avatar className="w-10 h-10 relative">
-                                            {user?.avatar && isValidAvatarUrl(user.avatar) && !avatarError ? (
+                                            {user?.avatar &&
+                                            isValidAvatarUrl(user.avatar) &&
+                                            !avatarError ? (
                                                 <>
                                                     <AvatarImage
                                                         src={getProxiedAvatarUrl(user.avatar)}
