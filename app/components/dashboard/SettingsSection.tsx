@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
     TriangleAlertIcon,
     SlidersHorizontal,
-    CircleCheck,
     ChevronDown,
     Wrench,
     X,
@@ -19,7 +18,6 @@ import {
     Monitor,
 } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
-import { Separator } from "../ui/separator";
 import { Switch } from "../ui/switch";
 import { Slider } from "@heroui/slider";
 
@@ -203,7 +201,9 @@ const SettingCard = ({
                                 </label>
                                 <Slider
                                     value={sliderValue}
-                                    onChange={(value) => setSliderValue(Array.isArray(value) ? value : [value])}
+                                    onChange={(value) =>
+                                        setSliderValue(Array.isArray(value) ? value : [value])
+                                    }
                                     maxValue={100}
                                     minValue={0}
                                     step={1}
@@ -327,8 +327,7 @@ const allSettingsData: SettingCardProps[] = [
     // Power Settings
     {
         title: "Mouse Data Queue Size",
-        description:
-            "Increase mouse responsiveness and accuracy by prioritizing essential system",
+        description: "Increase mouse responsiveness and accuracy by prioritizing essential system",
         alertCount: 0,
         isEnabled: true,
         hasConfigure: true,
@@ -354,16 +353,14 @@ const allSettingsData: SettingCardProps[] = [
     // Security Settings
     {
         title: "Disable UAC",
-        description:
-            "Disables User Account Control to reduce interruptions and improve workflow.",
+        description: "Disables User Account Control to reduce interruptions and improve workflow.",
         alertCount: 3,
         isEnabled: false,
         category: "security",
     },
     {
         title: "Windows Firewall",
-        description:
-            "Configures firewall settings for optimal gaming and application performance.",
+        description: "Configures firewall settings for optimal gaming and application performance.",
         alertCount: 1,
         isEnabled: true,
         category: "security",
@@ -515,8 +512,7 @@ const allSettingsData: SettingCardProps[] = [
     },
     {
         title: "Disable V-Sync",
-        description:
-            "Reduce input lag and screen tearing by disabling vertical synchronization.",
+        description: "Reduce input lag and screen tearing by disabling vertical synchronization.",
         alertCount: 0,
         isEnabled: true,
         category: "gpu",
@@ -548,8 +544,7 @@ const allSettingsData: SettingCardProps[] = [
     // Monitor Settings
     {
         title: "Custom NVIDIA driver",
-        description:
-            "Increase mouse responsiveness and accuracy by prioritizing essential system",
+        description: "Increase mouse responsiveness and accuracy by prioritizing essential system",
         alertCount: 0,
         isEnabled: true,
         hasConfigure: true,
@@ -564,8 +559,7 @@ const allSettingsData: SettingCardProps[] = [
     },
     {
         title: "Reduce Screen Flicker",
-        description:
-            "Enable flicker-free mode for better visual comfort and reduced eye strain.",
+        description: "Enable flicker-free mode for better visual comfort and reduced eye strain.",
         alertCount: 0,
         isEnabled: true,
         category: "monitor",
@@ -674,9 +668,7 @@ export const SettingsSection = ({
                         <SlidersHorizontal className="w-8 h-8 text-gray-400" />
                     </div>
                     <h3 className="text-lg font-medium text-white mb-2">No settings found</h3>
-                    <p className="text-gray-400">
-                        Try adjusting your search or filter criteria
-                    </p>
+                    <p className="text-gray-400">Try adjusting your search or filter criteria</p>
                 </div>
             )}
         </div>

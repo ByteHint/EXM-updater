@@ -21,11 +21,12 @@ import {
     X,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { Avatar, AvatarFallback } from "../../components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Separator } from "../../components/ui/separator";
+import { useAuthStore } from "../../store/useAuthStore";
 
 interface SidebarProps {
     onCollapseChange?: (isCollapsed: boolean) => void;
@@ -38,8 +39,13 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
+    const [avatarLoadingStates, setAvatarLoadingStates] = useState<Record<string, boolean>>({});
+    const [avatarError, setAvatarError] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const profileCardRef = useRef<HTMLDivElement>(null);
+
+    // Get user data from auth store
+    const { user, signOut } = useAuthStore();
 
     // Handle clicking outside to close dropdown
     useEffect(() => {
@@ -84,8 +90,8 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
     };
 
     const handleConfirmLogout = () => {
-        // Add logout logic here
-        console.log("Logging out...");
+        // Use the actual logout function from auth store
+        signOut();
         setShowLogoutModal(false);
     };
 
@@ -138,6 +144,99 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
         { label: "Backups", icon: Download },
         { label: "Fixes", icon: Wrench },
     ];
+
+    // Helper function to get user initials
+    const getUserInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map(word => word.charAt(0))
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
+    // Helper function to get user display name
+    const getUserDisplayName = () => {
+        if (!user) return "Guest";
+        return user.name || "User";
+    };
+
+    // Helper function to get user subscription status
+    const getUserSubscriptionStatus = () => {
+        // You can extend this based on your subscription logic
+        return "Free User";
+    };
+
+    // Debug logging for avatar
+    useEffect(() => {
+        if (user) {
+            console.log("Sidebar - User data:", {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                avatar: user.avatar,
+                authProvider: user.authProvider
+            });
+            
+            if (user.avatar) {
+                console.log("Sidebar - Avatar URL analysis:", {
+                    originalUrl: user.avatar,
+                    isValidUrl: isValidAvatarUrl(user.avatar),
+                    proxiedUrl: getProxiedAvatarUrl(user.avatar),
+                    isExternal: !user.avatar.startsWith('/') && !user.avatar.startsWith('http://localhost') && !user.avatar.startsWith('https://localhost')
+                });
+            }
+        }
+        // reset error state when user or avatar changes
+        setAvatarError(false);
+    }, [user]);
+
+    // Helper function to handle avatar loading errors
+    const handleAvatarError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        console.warn("Avatar failed to load:", event.currentTarget.src);
+        // Trigger fallback rendering
+        setAvatarError(true);
+        // Remove loading state
+        const avatarUrl = event.currentTarget.src;
+        setAvatarLoadingStates(prev => ({ ...prev, [avatarUrl]: false }));
+    };
+
+    // Helper function to handle avatar loading success
+    const handleAvatarLoad = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        console.log("Avatar loaded successfully:", event.currentTarget.src);
+        // Remove loading state
+        const avatarUrl = event.currentTarget.src;
+        setAvatarLoadingStates(prev => ({ ...prev, [avatarUrl]: false }));
+    };
+
+    // Helper function to check if avatar URL is valid
+    const isValidAvatarUrl = (url: string) => {
+        if (!url) return false;
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    // Helper function to get proxied avatar URL
+    const getProxiedAvatarUrl = (avatarUrl: string): string => {
+        if (!avatarUrl) return '';
+        
+        // If it's already a relative URL or localhost, return as is
+        if (avatarUrl.startsWith('/') || avatarUrl.startsWith('http://localhost') || avatarUrl.startsWith('https://localhost')) {
+            return avatarUrl;
+        }
+        
+        // For external URLs, use our proxy
+        try {
+            const encodedUrl = encodeURIComponent(avatarUrl);
+            return `http://localhost:5000/api/v1/avatar-proxy?url=${encodedUrl}`;
+        } catch {
+            return avatarUrl; // Fallback to original URL
+        }
+    };
 
     return (
         <>
@@ -279,15 +378,35 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
                         >
                             <CardContent className="p-0">
                                 <div className="flex items-center gap-3 p-2">
-                                    <Avatar className="w-10 h-10">
-                                        <AvatarFallback>P</AvatarFallback>
+                                    <Avatar className="w-10 h-10 relative">
+                                        {user?.avatar && isValidAvatarUrl(user.avatar) && !avatarError ? (
+                                            <>
+                                                <AvatarImage
+                                                    src={getProxiedAvatarUrl(user.avatar)}
+                                                    alt={getUserDisplayName()}
+                                                    onError={handleAvatarError}
+                                                    onLoad={handleAvatarLoad}
+                                                    className="w-full h-full object-cover rounded-full"
+                                                />
+                                                {avatarLoadingStates[user.avatar] && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-full">
+                                                        <div className="w-4 h-4 border-2 border-gray-600 border-t-white rounded-full animate-spin"></div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : null}
+                                        <AvatarFallback>
+                                            {getUserInitials(getUserDisplayName())}
+                                        </AvatarFallback>
                                     </Avatar>
                                     <div className="flex items-center justify-between flex-1">
                                         <div className="flex flex-col">
                                             <span className="text-sm font-medium text-white">
-                                                Pigeon
+                                                {getUserDisplayName()}
                                             </span>
-                                            <span className="text-xs text-gray-500">Free User</span>
+                                            <span className="text-xs text-gray-500">
+                                                {getUserSubscriptionStatus()}
+                                            </span>
                                         </div>
                                         <ChevronDown
                                             className={`w-3.5 h-3.5 text-gray-500 transition-transform duration-200 ${isProfileDropdownOpen ? "rotate-180" : ""}`}
@@ -305,16 +424,37 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
                             >
                                 <CardContent className="flex flex-col px-2 max-h-fit">
                                     <div className="flex items-center pb-4 gap-2 border-b border-gray-700/30">
-                                        <Avatar className="w-10 h-10">
-                                            <AvatarFallback>P</AvatarFallback>
+                                        <Avatar className="w-10 h-10 relative">
+                                            {user?.avatar && isValidAvatarUrl(user.avatar) && !avatarError ? (
+                                                <>
+                                                    <AvatarImage
+                                                        src={getProxiedAvatarUrl(user.avatar)}
+                                                        alt={getUserDisplayName()}
+                                                        onError={handleAvatarError}
+                                                        onLoad={handleAvatarLoad}
+                                                        className="w-full h-full object-cover rounded-full"
+                                                    />
+                                                    {avatarLoadingStates[user.avatar] && (
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-full">
+                                                            <div className="w-4 h-4 border-2 border-gray-600 border-t-white rounded-full animate-spin"></div>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : null}
+                                            <AvatarFallback>
+                                                {getUserInitials(getUserDisplayName())}
+                                            </AvatarFallback>
                                         </Avatar>
                                         <div className="flex items-center justify-between flex-1">
                                             <div className="flex flex-col">
                                                 <span className="text-sm font-medium text-white">
-                                                    Pigeon
+                                                    {getUserDisplayName()}
                                                 </span>
                                                 <span className="text-xs text-gray-500">
-                                                    Free User
+                                                    {user?.email || "No email"}
+                                                </span>
+                                                <span className="text-xs text-gray-400">
+                                                    {getUserSubscriptionStatus()}
                                                 </span>
                                             </div>
                                         </div>
