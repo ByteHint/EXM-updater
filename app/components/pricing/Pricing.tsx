@@ -77,7 +77,7 @@ const Pricing: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="bg-[#1A1A24] border border-[#332E474D]">
                     <CardContent className="p-6">
-                        <h2 className="text-xl font-semibold mb-2">Free</h2>
+                        <h2 className="text-xl font-semibold mb-2">Monthly</h2>
                         <p className="text-gray-400 mb-4">Basic features to get started.</p>
                         <Button className="bg-[#2a2a36] hover:bg-[#3a3a46]">Current Plan</Button>
                     </CardContent>
