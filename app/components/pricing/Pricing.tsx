@@ -64,8 +64,9 @@ const Pricing: React.FC = () => {
             </Button>
             <h1 className="text-4xl text-center font-bold mb-3">Achieve maximum performance</h1>
             <p className="block text-gray-400 text-center text-sm mb-8 mx-auto max-w-[720px] leading-relaxed">
-                Upgrade to Premium and unlock even more tweaks 
-                <br/>that will help you dominate your next game
+                Upgrade to Premium and unlock even more tweaks
+                <br />
+                that will help you dominate your next game
             </p>
 
             {/* Devices selector */}
@@ -88,14 +89,21 @@ const Pricing: React.FC = () => {
                             <h2 className="text-xl font-semibold mb-2">Premium</h2>
                         </div>
                         <p className="text-gray-400 mb-4">Unlock all pro features.</p>
-                        <Button className="bg-[#818CF8] hover:bg-[#818CF8]/90 text-black">Upgrade</Button>
+                        <Button className="bg-[#818CF8] hover:bg-[#818CF8]/90 text-black">
+                            Upgrade
+                        </Button>
                     </CardContent>
                 </Card>
                 <Card className="bg-[#1A1A24] border border-[#332E474D]">
                     <CardContent className="p-6">
                         <h2 className="text-xl font-semibold mb-2">Enterprise</h2>
                         <p className="text-gray-400 mb-4">For teams and organizations.</p>
-                        <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700">Contact sales</Button>
+                        <Button
+                            variant="outline"
+                            className="border-gray-600 text-white hover:bg-gray-700"
+                        >
+                            Contact sales
+                        </Button>
                     </CardContent>
                 </Card>
             </div>
@@ -104,5 +112,3 @@ const Pricing: React.FC = () => {
 };
 
 export default Pricing;
-
-
