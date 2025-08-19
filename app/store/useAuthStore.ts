@@ -43,7 +43,7 @@ interface AuthState {
 interface AuthActions {
     // Core session management
     validateSession: () => Promise<void>;
-    signOut: () => void;
+    signOut: () => Promise<void>;
 
     // Multi-step authentication flow
     signIn: (email: string, password: string) => Promise<boolean>;
@@ -390,9 +390,35 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
     /**
      * Logs the user out, clears all tokens and session data from the state and storage.
      */
-    signOut: () => {
-        apiClient.logout();
+    signOut: async () => {
+        // Set loading state during logout
+        set({ isLoading: true });
+
+        try {
+            // Call the backend logout API to invalidate the session
+            await apiClient.logout();
+            console.warn("[LOGOUT] Backend logout successful");
+        } catch (error) {
+            console.error("Backend logout failed:", error);
+            // Continue with local cleanup even if backend call fails
+        }
+
+        // Clear local storage and state regardless of backend response
         localStorage.removeItem("auth_token");
+
+        // Clear any other potential auth-related storage
+        sessionStorage.clear();
+
+        // Clean up OAuth listeners if in Electron environment
+        if (typeof window !== "undefined" && window.api) {
+            try {
+                get().cleanupOAuthListener();
+            } catch (error) {
+                console.warn("[LOGOUT] Error cleaning up OAuth listeners:", error);
+            }
+        }
+
+        // Reset all auth state
         set({
             user: null,
             isAuthenticated: false,
@@ -401,6 +427,8 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
             authFlowStatus: "idle",
             flowEmail: null,
         });
+
+        console.warn("[LOGOUT] Local state cleared successfully");
     },
 
     /**
