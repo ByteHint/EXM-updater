@@ -93,27 +93,29 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
     const handleConfirmLogout = async () => {
         try {
             // Show loading state in the modal
-            const logoutButton = document.querySelector('[data-logout-button]') as HTMLButtonElement;
+            const logoutButton = document.querySelector(
+                "[data-logout-button]",
+            ) as HTMLButtonElement;
             if (logoutButton) {
                 logoutButton.disabled = true;
-                logoutButton.textContent = 'Logging out...';
+                logoutButton.textContent = "Logging out...";
             }
-            
+
             // Call the backend logout API first
             await signOut();
-            
+
             // Close the modal
             setShowLogoutModal(false);
-            
+
             // The router will automatically redirect to /welcome due to auth state change
-            console.log('Logout completed successfully');
+            console.log("Logout completed successfully");
         } catch (error) {
-            console.error('Logout error:', error);
+            console.error("Logout error:", error);
             // Even if the API call fails, we should still clear local state
             try {
                 await signOut();
             } catch (secondError) {
-                console.error('Second logout attempt failed:', secondError);
+                console.error("Second logout attempt failed:", secondError);
             }
             setShowLogoutModal(false);
         }
@@ -121,10 +123,10 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
 
     const handleCancelLogout = () => {
         // Reset the logout button state if it was in loading state
-        const logoutButton = document.querySelector('[data-logout-button]') as HTMLButtonElement;
+        const logoutButton = document.querySelector("[data-logout-button]") as HTMLButtonElement;
         if (logoutButton) {
             logoutButton.disabled = false;
-            logoutButton.textContent = 'Log out';
+            logoutButton.textContent = "Log out";
         }
         setShowLogoutModal(false);
     };
