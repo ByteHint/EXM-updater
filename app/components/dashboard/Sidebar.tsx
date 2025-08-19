@@ -21,6 +21,7 @@ import {
     X,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
@@ -43,7 +44,7 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
     const [avatarError, setAvatarError] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const profileCardRef = useRef<HTMLDivElement>(null);
-
+    const navigate = useNavigate();
     // Get user data from auth store
     const { user, signOut } = useAuthStore();
 
@@ -100,8 +101,7 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
     };
 
     const handleUpgradeClick = () => {
-        // Add upgrade logic here
-        console.log("Upgrading to premium...");
+        navigate("/pricing");
         setIsProfileDropdownOpen(false);
     };
 

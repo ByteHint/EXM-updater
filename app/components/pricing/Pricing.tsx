@@ -71,7 +71,6 @@ const Pricing: React.FC = () => {
 
             {/* Devices selector */}
             <div className="flex justify-center mb-10">
-                {/* Controlled single-select toggle group */}
                 <DevicesToggle />
             </div>
 
