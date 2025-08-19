@@ -42,14 +42,7 @@ function AppContent() {
     }, [validateSession, initializeOAuthListener, cleanupOAuthListener]);
 
     // Ensure we land on the correct route after auth state changes
-    useEffect(() => {
-        if (isLoading) return;
-        if (isAuthenticated) {
-            navigate("/dashboard", { replace: true });
-        } else {
-            navigate("/welcome", { replace: true });
-        }
-    }, [isAuthenticated, isLoading, navigate]);
+    
 
     // The rest of this component is perfect and does not need to change.
     if (isLoading) {
