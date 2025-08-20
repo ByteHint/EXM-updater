@@ -2,12 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { useAuthStore } from "../../store/useAuthStore";
-import {
-    Power,
-    Grid3X3,
-    CheckCircle,
-    Sparkles,
-} from "lucide-react";
+import { Power, Grid3X3, CheckCircle, Sparkles } from "lucide-react";
 
 interface SystemMetrics {
     cpu: {
@@ -48,34 +43,36 @@ export default function HomePage() {
             usage: 0,
             temperature: 0,
             cores: 0,
-            model: "Loading..."
+            model: "Loading...",
         },
         memory: {
             used: 0,
             total: 0,
-            percentage: 0
+            percentage: 0,
         },
         disk: {
             used: 0,
             total: 0,
             percentage: 0,
             readSpeed: 0,
-            writeSpeed: 0
+            writeSpeed: 0,
         },
         network: {
             rx: 0,
             tx: 0,
-            connections: 0
+            connections: 0,
         },
         gpu: {
             usage: 0,
             temperature: 0,
             memory: 0,
-            model: "Loading..."
-        }
+            model: "Loading...",
+        },
     });
 
-    const [performanceData, setPerformanceData] = useState<Array<{ time: number, cpu: number, memory: number, gpu: number }>>([]);
+    const [performanceData, setPerformanceData] = useState<
+        Array<{ time: number; cpu: number; memory: number; gpu: number }>
+    >([]);
     const [activeTab, setActiveTab] = useState<"CPU" | "GPU" | "RAM">("CPU");
     const [backupCount] = useState(0);
     const [tweaksApplied] = useState(0);
@@ -86,27 +83,26 @@ export default function HomePage() {
     useEffect(() => {
         const initializeSystemData = async () => {
             try {
-
                 // Get initial system info
                 if (typeof window !== "undefined" && window.api) {
                     const systemInfo = await window.api.getSystemInfo();
                     if (systemInfo) {
-                        setSystemMetrics(prev => ({
+                        setSystemMetrics((prev) => ({
                             ...prev,
                             cpu: {
                                 ...prev.cpu,
                                 model: systemInfo.cpu.model,
-                                cores: systemInfo.cpu.cores
+                                cores: systemInfo.cpu.cores,
                             },
                             memory: {
                                 ...prev.memory,
                                 total: systemInfo.memory.total,
-                                used: systemInfo.memory.used
+                                used: systemInfo.memory.used,
                             },
                             gpu: {
                                 ...prev.gpu,
-                                model: systemInfo.gpu.model
-                            }
+                                model: systemInfo.gpu.model,
+                            },
                         }));
                     }
                 }
@@ -133,66 +129,73 @@ export default function HomePage() {
                     // Get GPU usage
                     const gpuUsage = await window.api.getGpuUsage();
 
-                    console.log(`Performance Update: CPU=${cpuUsage}%, Memory=${memoryInfo?.percentage}%, GPU=${gpuUsage}%`);
-                    console.log('Raw memory info:', memoryInfo);
-                    console.log('Raw GPU usage:', gpuUsage);
+                    console.log(
+                        `Performance Update: CPU=${cpuUsage}%, Memory=${memoryInfo?.percentage}%, GPU=${gpuUsage}%`,
+                    );
+                    console.log("Raw memory info:", memoryInfo);
+                    console.log("Raw GPU usage:", gpuUsage);
 
                     // Update system metrics
-                    if (!isUnmounted && memoryInfo) setSystemMetrics(prev => ({
-                        ...prev,
-                        cpu: {
-                            ...prev.cpu,
-                            usage: cpuUsage || 0
-                        },
-                        memory: {
-                            ...prev.memory,
-                            used: memoryInfo.used || 0,
-                            total: memoryInfo.total || 0,
-                            percentage: memoryInfo.percentage || 0
-                        },
-                        gpu: {
-                            ...prev.gpu,
-                            usage: gpuUsage || 0
-                        }
-                    }));
+                    if (!isUnmounted && memoryInfo)
+                        setSystemMetrics((prev) => ({
+                            ...prev,
+                            cpu: {
+                                ...prev.cpu,
+                                usage: cpuUsage || 0,
+                            },
+                            memory: {
+                                ...prev.memory,
+                                used: memoryInfo.used || 0,
+                                total: memoryInfo.total || 0,
+                                percentage: memoryInfo.percentage || 0,
+                            },
+                            gpu: {
+                                ...prev.gpu,
+                                usage: gpuUsage || 0,
+                            },
+                        }));
 
                     // Update performance data
-                    if (!isUnmounted && memoryInfo) setPerformanceData(prev => {
-                        const newData = [...prev];
-                        const currentTime = Date.now();
+                    if (!isUnmounted && memoryInfo)
+                        setPerformanceData((prev) => {
+                            const newData = [...prev];
+                            const currentTime = Date.now();
 
-                        // Add new data point
-                        const newPoint = {
-                            time: currentTime,
-                            cpu: cpuUsage || 0,
-                            memory: memoryInfo.percentage || 0,
-                            gpu: gpuUsage || 0
-                        };
+                            // Add new data point
+                            const newPoint = {
+                                time: currentTime,
+                                cpu: cpuUsage || 0,
+                                memory: memoryInfo.percentage || 0,
+                                gpu: gpuUsage || 0,
+                            };
 
-                        console.log('Adding performance point:', newPoint);
-                        newData.push(newPoint);
+                            console.log("Adding performance point:", newPoint);
+                            newData.push(newPoint);
 
-                        // Keep only the last 60 seconds
-                        const sixtySecondsAgo = currentTime - 60000;
-                        const pruned = newData.filter(d => d.time >= sixtySecondsAgo);
+                            // Keep only the last 60 seconds
+                            const sixtySecondsAgo = currentTime - 60000;
+                            const pruned = newData.filter((d) => d.time >= sixtySecondsAgo);
 
-                        return pruned;
-                    });
+                            return pruned;
+                        });
                 }
             } catch (error) {
                 console.error("Error updating performance data:", error);
             }
         }, 1000);
 
-        return () => { isUnmounted = true; clearInterval(interval); };
+        return () => {
+            isUnmounted = true;
+            clearInterval(interval);
+        };
     }, []);
 
     const formatBytes = (bytes: number) => {
-        if (bytes === 0) return '0 B';
+        if (bytes === 0) return "0 B";
         const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const sizes = ["B", "KB", "MB", "GB", "TB"];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
     };
 
     const getHardwareTitle = () => {
@@ -232,12 +235,21 @@ export default function HomePage() {
                     {/* Backup Card */}
                     <Card className="group relative overflow-hidden bg-[#12121a] border border-[#2a2a36] rounded-2xl transition-colors hover:bg-[#171722] hover:border-[#A5B4FC]/40">
                         <CardContent className="">
-                            <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: "radial-gradient(120% 120% at 100% 100%, rgba(165,180,252,0.10) 0%, rgba(165,180,252,0) 60%)" }} />
+                            <div
+                                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                                style={{
+                                    background:
+                                        "radial-gradient(120% 120% at 100% 100%, rgba(165,180,252,0.10) 0%, rgba(165,180,252,0) 60%)",
+                                }}
+                            />
                             <div className="flex items-center justify-between mb-4 relative">
                                 <div className="w-10 h-10 rounded-xl border border-[#2a2a36] flex items-center justify-center">
                                     <Power size={16} className="text-[#A5B4FC]" />
                                 </div>
-                                <Button variant="ghost" className="rounded-xl border border-[#A5B4FC]/30 text-[#A5B4FC] hover:bg-[#A5B4FC]/10 hover:text-[#A5B4FC]">
+                                <Button
+                                    variant="ghost"
+                                    className="rounded-xl border border-[#A5B4FC]/30 text-[#A5B4FC] hover:bg-[#A5B4FC]/10 hover:text-[#A5B4FC]"
+                                >
                                     Create backup
                                 </Button>
                             </div>
@@ -249,12 +261,21 @@ export default function HomePage() {
                     {/* Tweaks Card */}
                     <Card className="group relative overflow-hidden bg-[#12121a] border border-[#2a2a36] rounded-2xl transition-colors hover:bg-[#171722] hover:border-[#FF2056]/40">
                         <CardContent className="">
-                            <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: "radial-gradient(120% 120% at 100% 100%, rgba(255,32,86,0.10) 0%, rgba(255,32,86,0) 60%)" }} />
+                            <div
+                                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                                style={{
+                                    background:
+                                        "radial-gradient(120% 120% at 100% 100%, rgba(255,32,86,0.10) 0%, rgba(255,32,86,0) 60%)",
+                                }}
+                            />
                             <div className="flex items-center justify-between mb-4 relative">
                                 <div className="w-10 h-10 rounded-xl border border-[#2a2a36] flex items-center justify-center">
                                     <Grid3X3 size={16} className="text-[#FF2056]" />
                                 </div>
-                                <Button variant="ghost" className="rounded-xl border border-[#FF2056]/30 text-[#FF2056] hover:bg-[#FF2056]/10 hover:text-[#FF2056]">
+                                <Button
+                                    variant="ghost"
+                                    className="rounded-xl border border-[#FF2056]/30 text-[#FF2056] hover:bg-[#FF2056]/10 hover:text-[#FF2056]"
+                                >
                                     Apply tweaks
                                 </Button>
                             </div>
@@ -268,16 +289,27 @@ export default function HomePage() {
                     {/* Space Cleaned Card */}
                     <Card className="group relative overflow-hidden bg-[#12121a] border border-[#2a2a36] rounded-2xl transition-colors hover:bg-[#171722] hover:border-[#05DF72]/40">
                         <CardContent className="">
-                            <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: "radial-gradient(120% 120% at 100% 100%, rgba(5,223,114,0.10) 0%, rgba(5,223,114,0) 60%)" }} />
+                            <div
+                                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                                style={{
+                                    background:
+                                        "radial-gradient(120% 120% at 100% 100%, rgba(5,223,114,0.10) 0%, rgba(5,223,114,0) 60%)",
+                                }}
+                            />
                             <div className="flex items-center justify-between mb-4 relative">
                                 <div className="w-10 h-10 rounded-xl border border-[#2a2a36] flex items-center justify-center">
                                     <CheckCircle size={16} className="text-[#05DF72]" />
                                 </div>
-                                <Button variant="ghost" className="rounded-xl border border-[#05DF72]/30 text-[#05DF72] hover:bg-[#05DF72]/10 hover:text-[#05DF72]">
+                                <Button
+                                    variant="ghost"
+                                    className="rounded-xl border border-[#05DF72]/30 text-[#05DF72] hover:bg-[#05DF72]/10 hover:text-[#05DF72]"
+                                >
                                     Debloat system
                                 </Button>
                             </div>
-                            <div className="text-2xl font-bold text-white mb-1">{spaceCleaned} GB</div>
+                            <div className="text-2xl font-bold text-white mb-1">
+                                {spaceCleaned} GB
+                            </div>
                             <div className="text-gray-400 text-sm">Space cleaned</div>
                         </CardContent>
                     </Card>
@@ -296,10 +328,11 @@ export default function HomePage() {
                                         <button
                                             key={tab}
                                             onClick={() => setActiveTab(tab)}
-                                            className={`px-4 py-1 cursor-pointer rounded-lg text-sm font-medium transition-colors ${activeTab === tab
-                                                ? "bg-[#1A1A24] text-white ring-1 ring-[#1E1E28]"
-                                                : "text-gray-400 hover:text-white"
-                                                }`}
+                                            className={`px-4 py-1 cursor-pointer rounded-lg text-sm font-medium transition-colors ${
+                                                activeTab === tab
+                                                    ? "bg-[#1A1A24] text-white ring-1 ring-[#1E1E28]"
+                                                    : "text-gray-400 hover:text-white"
+                                            }`}
                                         >
                                             {tab}
                                         </button>
@@ -308,10 +341,7 @@ export default function HomePage() {
                             </div>
 
                             {/* Performance Graph */}
-                            <PerformanceChart
-                                data={performanceData}
-                                activeTab={activeTab}
-                            />
+                            <PerformanceChart data={performanceData} activeTab={activeTab} />
                         </div>
                     </CardContent>
                 </Card>
@@ -350,11 +380,10 @@ function PerformanceChart({
     const stepX = n > 1 ? innerW / (n - 1) : innerW;
 
     const toX = (i: number) => padding.left + i * stepX;
-    const toY = (v: number) => padding.top + innerH - (Math.max(0, Math.min(100, v)) / 100) * innerH;
+    const toY = (v: number) =>
+        padding.top + innerH - (Math.max(0, Math.min(100, v)) / 100) * innerH;
 
-    const pathD = points
-        .map((v, i) => `${i === 0 ? "M" : "L"}${toX(i)},${toY(v)}`)
-        .join(" ");
+    const pathD = points.map((v, i) => `${i === 0 ? "M" : "L"}${toX(i)},${toY(v)}`).join(" ");
 
     const areaD = `${pathD} L${padding.left + (n - 1) * stepX},${padding.top + innerH} L${padding.left},${padding.top + innerH} Z`;
 
@@ -374,8 +403,17 @@ function PerformanceChart({
                     const y = toY(p);
                     return (
                         <g key={idx}>
-                            <line x1={padding.left} y1={y} x2={padding.left + innerW} y2={y} stroke="#2a2a36" strokeDasharray="4 4" />
-                            <text x={8} y={y + 4} fill="#6b7280" fontSize="12">{p}%</text>
+                            <line
+                                x1={padding.left}
+                                y1={y}
+                                x2={padding.left + innerW}
+                                y2={y}
+                                stroke="#2a2a36"
+                                strokeDasharray="4 4"
+                            />
+                            <text x={8} y={y + 4} fill="#6b7280" fontSize="12">
+                                {p}%
+                            </text>
                         </g>
                     );
                 })}
@@ -383,7 +421,14 @@ function PerformanceChart({
                 {Array.from({ length: verticalSegments + 1 }).map((_, i) => {
                     const x = padding.left + (innerW / verticalSegments) * i;
                     return (
-                        <line key={i} x1={x} y1={padding.top} x2={x} y2={padding.top + innerH} stroke="#1e1e28" />
+                        <line
+                            key={i}
+                            x1={x}
+                            y1={padding.top}
+                            x2={x}
+                            y2={padding.top + innerH}
+                            stroke="#1e1e28"
+                        />
                     );
                 })}
 

@@ -1,10 +1,43 @@
 import { type BrowserWindow, ipcMain, shell } from "electron";
 import os from "os";
+import path from "path";
+import { promises as fsp } from "fs";
 import { machineIdSync } from "node-machine-id";
 import { exec } from "child_process";
 import { promisify } from "util";
 
 const execAsync = promisify(exec);
+
+async function clearDirectory(directory: string) {
+    try {
+        const entries = await fsp.readdir(directory, { withFileTypes: true });
+        let removedFiles = 0;
+        let removedDirs = 0;
+        let errors = 0;
+
+        await Promise.all(
+            entries.map(async (entry) => {
+                const targetPath = path.join(directory, entry.name);
+                try {
+                    await fsp.rm(targetPath, { recursive: true, force: true });
+                    if (entry.isDirectory()) {
+                        removedDirs++;
+                    } else {
+                        removedFiles++;
+                    }
+                } catch (e) {
+                    console.error("Failed to remove:", targetPath, e);
+                    errors++;
+                }
+            }),
+        );
+
+        return { removedFiles, removedDirs, errors };
+    } catch (e) {
+        console.error("Failed to read temp directory:", directory, e);
+        return { removedFiles: 0, removedDirs: 0, errors: 1 };
+    }
+}
 
 const handleIPC = (channel: string, handler: (...args: any[]) => void) => {
     ipcMain.handle(channel, handler);
@@ -50,12 +83,15 @@ export const registerWindowIPC = (mainWindow: BrowserWindow) => {
             const cpus = os.cpus();
             const totalMem = os.totalmem();
             const freeMem = os.freemem();
-            
+
             // Get GPU info
             let gpuModel = "Unknown GPU";
             if (platform === "win32") {
                 try {
-                    const { stdout } = await execAsync('wmic path win32_VideoController where "AdapterCompatibility like \'%NVIDIA%\' OR AdapterCompatibility like \'%AMD%\' OR AdapterCompatibility like \'%Radeon%\'" get Name /value', { timeout: 3000 });
+                    const { stdout } = await execAsync(
+                        "wmic path win32_VideoController where \"AdapterCompatibility like '%NVIDIA%' OR AdapterCompatibility like '%AMD%' OR AdapterCompatibility like '%Radeon%'\" get Name /value",
+                        { timeout: 3000 },
+                    );
                     const match = stdout.match(/Name=(.+)/);
                     if (match && match[1].trim()) {
                         gpuModel = match[1].trim();
@@ -64,23 +100,23 @@ export const registerWindowIPC = (mainWindow: BrowserWindow) => {
                     console.log("Could not get GPU model:", error);
                 }
             }
-            
+
             return {
                 platform,
                 arch,
                 cpu: {
                     model: cpus[0]?.model || "Unknown",
                     cores: cpus.length,
-                    speed: cpus[0]?.speed || 0
+                    speed: cpus[0]?.speed || 0,
                 },
                 memory: {
                     total: totalMem,
                     free: freeMem,
-                    used: totalMem - freeMem
+                    used: totalMem - freeMem,
                 },
                 gpu: {
-                    model: gpuModel
-                }
+                    model: gpuModel,
+                },
             };
         } catch (error) {
             console.error("Error getting system info:", error);
@@ -91,7 +127,9 @@ export const registerWindowIPC = (mainWindow: BrowserWindow) => {
     handleIPC("get-cpu-usage", async () => {
         try {
             if (os.platform() === "win32") {
-                const { stdout } = await execAsync("wmic cpu get loadpercentage /value", { timeout: 3000 });
+                const { stdout } = await execAsync("wmic cpu get loadpercentage /value", {
+                    timeout: 3000,
+                });
                 const match = stdout.match(/LoadPercentage=(\d+)/);
                 if (match) {
                     const cpuUsage = parseInt(match[1]);
@@ -120,14 +158,16 @@ export const registerWindowIPC = (mainWindow: BrowserWindow) => {
             const freeMem = os.freemem();
             const usedMem = totalMem - freeMem;
             const usagePercentage = (usedMem / totalMem) * 100;
-            
-            console.log(`Memory: ${Math.round(usagePercentage)}% (${Math.round(usedMem/1024/1024/1024)}GB / ${Math.round(totalMem/1024/1024/1024)}GB)`);
-            
+
+            console.log(
+                `Memory: ${Math.round(usagePercentage)}% (${Math.round(usedMem / 1024 / 1024 / 1024)}GB / ${Math.round(totalMem / 1024 / 1024 / 1024)}GB)`,
+            );
+
             return {
                 total: totalMem,
                 used: usedMem,
                 free: freeMem,
-                percentage: Math.round(usagePercentage)
+                percentage: Math.round(usagePercentage),
             };
         } catch (error) {
             console.error("Error getting memory usage:", error);
@@ -135,7 +175,7 @@ export const registerWindowIPC = (mainWindow: BrowserWindow) => {
                 total: 0,
                 used: 0,
                 free: 0,
-                percentage: 0
+                percentage: 0,
             };
         }
     });
@@ -146,8 +186,11 @@ export const registerWindowIPC = (mainWindow: BrowserWindow) => {
             if (os.platform() === "win32") {
                 // Method 1: Try nvidia-smi for NVIDIA GPUs
                 try {
-                    const { stdout } = await execAsync('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits', { timeout: 3000 });
-                    const lines = stdout.trim().split('\n');
+                    const { stdout } = await execAsync(
+                        "nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits",
+                        { timeout: 3000 },
+                    );
+                    const lines = stdout.trim().split("\n");
                     // Get the first discrete GPU (usually index 0 in nvidia-smi)
                     const gpuUsage = parseInt(lines[0]);
                     if (!isNaN(gpuUsage)) {
@@ -160,7 +203,8 @@ export const registerWindowIPC = (mainWindow: BrowserWindow) => {
 
                 // Method 2: Try PowerShell for dedicated GPU specifically
                 try {
-                    const cmd = 'powershell -Command "Get-Counter \\"\\GPU Engine(*)\\Utilization Percentage\\" | Select-Object -ExpandProperty CounterSamples | Where-Object {$_.InstanceName -match \\"pid_.*_luid_.*_phys_1\\"} | Measure-Object -Property CookedValue -Average | Select-Object -ExpandProperty Average"';
+                    const cmd =
+                        'powershell -Command "Get-Counter \\"\\GPU Engine(*)\\Utilization Percentage\\" | Select-Object -ExpandProperty CounterSamples | Where-Object {$_.InstanceName -match \\"pid_.*_luid_.*_phys_1\\"} | Measure-Object -Property CookedValue -Average | Select-Object -ExpandProperty Average"';
                     const { stdout } = await execAsync(cmd, { timeout: 5000 });
                     const gpuUsage = parseFloat(stdout.trim());
                     if (!isNaN(gpuUsage) && gpuUsage >= 0) {
@@ -173,7 +217,8 @@ export const registerWindowIPC = (mainWindow: BrowserWindow) => {
 
                 // Method 3: Try WMI for discrete GPU
                 try {
-                    const cmd = 'wmic path Win32_VideoController where "AdapterCompatibility like \'%NVIDIA%\' OR AdapterCompatibility like \'%AMD%\' OR AdapterCompatibility like \'%Radeon%\'" get LoadPercentage /value';
+                    const cmd =
+                        "wmic path Win32_VideoController where \"AdapterCompatibility like '%NVIDIA%' OR AdapterCompatibility like '%AMD%' OR AdapterCompatibility like '%Radeon%'\" get LoadPercentage /value";
                     const { stdout } = await execAsync(cmd, { timeout: 3000 });
                     const match = stdout.match(/LoadPercentage=(\d+)/);
                     if (match) {
@@ -194,6 +239,18 @@ export const registerWindowIPC = (mainWindow: BrowserWindow) => {
         } catch (error) {
             console.error("Error getting GPU usage:", error);
             return 0;
+        }
+    });
+
+    // Maintenance: Clear temporary files in user's temp directory
+    handleIPC("clear-temp-files", async () => {
+        try {
+            const tempDir = os.tmpdir();
+            const result = await clearDirectory(tempDir);
+            return { success: true, tempDir, ...result };
+        } catch (error: any) {
+            console.error("Error clearing temp files:", error?.message || error);
+            return { success: false, error: error?.message || String(error) };
         }
     });
 
