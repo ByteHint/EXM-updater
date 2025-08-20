@@ -60,10 +60,10 @@ const AppRouter: React.FC = () => {
             <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/pricing" element={<Pricing />} />
-                {/* <Route path="/tweaks" element={<TweaksPage />} />
-        <Route path="/tweaks/:category" element={<TweaksCategoryPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/profile" element={<ProfilePage />} /> */}
+                {/* <Route path="/tweaks" element={<TweaksPage />} /> */}
+                {/* <Route path="/tweaks/:category" element={<TweaksCategoryPage />} /> */}
+                {/* <Route path="/settings" element={<SettingsPage />} /> */}
+                {/* <Route path="/profile" element={<ProfilePage />} /> */}
             </Route>
 
             {/* --- Default Redirects --- */}

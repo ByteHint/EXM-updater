@@ -6,12 +6,13 @@ import { ControlPanelSection } from "./ControlPanelSection";
 import { NotificationSection } from "./NotificationSection";
 import { SettingsSection } from "./SettingsSection";
 import Sidebar from "./Sidebar";
+import HomePage from "./HomePage";
 
 export default function Dashboard() {
     const [activeCategory, setActiveCategory] = useState("core");
     const [searchQuery, setSearchQuery] = useState("");
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [activeSidebarSection, setActiveSidebarSection] = useState("General");
+    const [activeSidebarSection, setActiveSidebarSection] = useState("Home");
     const [filterState, setFilterState] = useState<"all" | "enabled" | "disabled" | "alerts">(
         "all",
     );
@@ -41,6 +42,7 @@ export default function Dashboard() {
             console.warn("Dashboard: Setting activeCategory to cpu");
             setActiveCategory("cpu");
         }
+        // No need to reset category for Home as it has its own component
     };
     const handleFilterChange = (filter: "all" | "enabled" | "disabled" | "alerts") => {
         setFilterState(filter);
@@ -139,36 +141,40 @@ export default function Dashboard() {
                 onCollapseChange={handleSidebarCollapseChange}
                 onSectionChange={handleSidebarSectionChange}
             />
-            <div
-                className={`flex-1 p-6 transition-all duration-300 ${isSidebarCollapsed ? "ml-0" : ""}`}
-            >
-                <ActionItemsSection activeCategory={activeCategory} />
-                <NotificationSection
-                    onTabChange={handleTabChange}
-                    activeSidebarSection={activeSidebarSection}
-                />
-                <ControlPanelSection
-                    onSearchChange={handleSearchChange}
-                    onFilterChange={handleFilterChange}
-                    onSortChange={handleSortChange}
-                    onRefreshClick={handleRefreshClick}
-                    filterState={filterState}
-                    sortState={sortState}
-                    sortDirection={sortDirection}
-                    filteredCount={filteredSettings.length}
-                    totalCount={categorySettings.length}
-                />
-                <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100vh-320px)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pr-2">
-                    <SettingsSection
-                        activeCategory={activeCategory}
-                        searchQuery={searchQuery}
+            {activeSidebarSection === "Home" ? (
+                <HomePage />
+            ) : (
+                <div
+                    className={`flex-1 p-6 transition-all duration-300 ${isSidebarCollapsed ? "ml-0" : ""}`}
+                >
+                    <ActionItemsSection activeCategory={activeCategory} />
+                    <NotificationSection
+                        onTabChange={handleTabChange}
+                        activeSidebarSection={activeSidebarSection}
+                    />
+                    <ControlPanelSection
+                        onSearchChange={handleSearchChange}
+                        onFilterChange={handleFilterChange}
+                        onSortChange={handleSortChange}
+                        onRefreshClick={handleRefreshClick}
                         filterState={filterState}
                         sortState={sortState}
                         sortDirection={sortDirection}
-                        isSidebarCollapsed={isSidebarCollapsed}
+                        filteredCount={filteredSettings.length}
+                        totalCount={categorySettings.length}
                     />
+                    <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100vh-320px)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pr-2">
+                        <SettingsSection
+                            activeCategory={activeCategory}
+                            searchQuery={searchQuery}
+                            filterState={filterState}
+                            sortState={sortState}
+                            sortDirection={sortDirection}
+                            isSidebarCollapsed={isSidebarCollapsed}
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

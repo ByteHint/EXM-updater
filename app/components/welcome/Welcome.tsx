@@ -4,9 +4,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ShieldUser, Star, Users } from "lucide-react";
 import { useState } from "react";
 import ForgotPassword from "../auth/ForgotPassword";
-import SignIn from "../auth/signin";
-import SignUp from "../auth/signup";
 import "./styles.css";
+import SignIn from "../auth/SignIn";
+import SignUp from "../auth/SignUp";
 
 type AuthFlow = "signup" | "signin" | "forgot";
 

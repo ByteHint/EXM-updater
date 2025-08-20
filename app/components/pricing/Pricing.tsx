@@ -45,7 +45,7 @@ function DevicesToggle() {
 
 const Pricing: React.FC = () => {
     const navigate = useNavigate();
-    const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+    
     const handleClose = () => {
         if (window.history.length > 1) {
             navigate(-1);
@@ -53,6 +53,7 @@ const Pricing: React.FC = () => {
             navigate("/dashboard");
         }
     };
+    
     return (
         <div className="relative w-full h-full p-6 text-white">
             <Button
@@ -84,16 +85,14 @@ const Pricing: React.FC = () => {
 
             <div className="flex flex-col items-center md:flex-row md:justify-center gap-2 md:gap-5">
                 <Card
-                    className={`w-[300px] h-[430px] bg-[#1A1A24] border border-[#332E474D] ${selectedPlan === "monthly" ? "border-[#818CF8]" : "border-[#332E474D]"}`}
-                    onClick={() => setSelectedPlan("monthly")}
-                    role="button"
+                    className={`w-[300px] h-[430px] bg-[#1A1A24] border border-[#332E474D] transition-all duration-200 hover:border-[#332E474D]/60 hover:bg-[#1A1A24]/80`}
                 >
                     <CardContent className="p-6">
                         <h2 className="text-base font-semibold mb-2 -mt-5">Monthly</h2>
                         <span className="text-[#FFFFFF] text-3xl font-medium">€9,99</span>{" "}
                         <span className="text-gray-400 text-sm font-medium">/month</span>
                         <p className="text-gray-400 mb-8 mt-2">Billed monthly</p>
-                        <Button className="text-center text-white bg-[##14141E] hover:bg-[#3a3a46] w-full rounded-[12px] border border-[#FF2E79]">
+                        <Button className="text-center text-white bg-[#14141E] hover:bg-[#FF2E79] hover:text-black w-full rounded-[12px] border border-[#FF2E79] transition-all duration-200">
                             Subscribe now
                         </Button>
                         <Separator className="w-full h-px bg-gray-700/30 mb-4 mt-8" />
@@ -193,8 +192,7 @@ const Pricing: React.FC = () => {
                     </CardContent>
                 </Card>
                 <Card
-                    className={`relative w-[300px] h-[430px] cursor-pointer bg-[#1A1A24] border ${selectedPlan === "annually" ? "border-[#818CF8]" : "border-[#332E474D]"}`}
-                    onClick={() => setSelectedPlan("annually")}
+                    className={`relative w-[300px] h-[430px] cursor-pointer bg-[#1A1A24] border border-[#818CF8] transition-all duration-200 hover:border-[#818CF8]/80 hover:bg-[#1A1A24]/80`}
                     role="button"
                 >
                     <CardContent className="p-6">
@@ -202,7 +200,6 @@ const Pricing: React.FC = () => {
                         <div className="absolute top-6 right-6">
                             <button
                                 className="inline-flex items-center justify-center rounded-full bg-[#FF2E79] text-black text-xs font-semibold px-4 py-2 shadow-lg"
-                                onClick={() => setAnnualActive((v) => !v)}
                             >
                                 Save 50%
                             </button>
@@ -210,7 +207,7 @@ const Pricing: React.FC = () => {
                         <span className="text-[#FFFFFF] text-3xl font-medium">€5,99</span>{" "}
                         <span className="text-gray-400 text-sm font-medium">/year</span>
                         <p className="text-gray-400 mb-8 mt-2">Billed yearly</p>
-                        <Button className="text-center text-white bg-[##14141E] hover:bg-[#3a3a46] w-full rounded-[12px] border border-[#FF2E79]">
+                        <Button className="text-center text-white bg-[#14141E] hover:bg-[#FF2E79] hover:text-black w-full rounded-[12px] border border-[#FF2E79] transition-all duration-200">
                             Subscribe now
                         </Button>
                         <Separator className="w-full h-px bg-gray-700/30 mb-4 mt-8" />
@@ -310,16 +307,14 @@ const Pricing: React.FC = () => {
                     </CardContent>
                 </Card>
                 <Card
-                    className={`w-[300px] h-[430px] cursor-pointer bg-[#1A1A24] border ${selectedPlan === "quarterly" ? "border-[#818CF8]" : "border-[#332E474D]"}`}
-                    onClick={() => setSelectedPlan("quarterly")}
-                    role="button"
+                    className={`w-[300px] h-[430px] bg-[#1A1A24] border border-[#332E474D] transition-all duration-200 hover:border-[#332E474D]/60 hover:bg-[#1A1A24]/80`}
                 >
                     <CardContent className="p-6">
                         <h2 className="text-base font-semibold mb-2 -mt-5">Quarterly</h2>
                         <span className="text-[#FFFFFF] text-3xl font-medium">€7,99</span>{" "}
                         <span className="text-gray-400 text-sm font-medium">/quarterly</span>
                         <p className="text-gray-400 mb-8 mt-2">Billed quarterly</p>
-                        <Button className="text-center text-white bg-[##14141E] hover:bg-[#3a3a46] w-full rounded-[12px] border border-[#FF2E79]">
+                        <Button className="text-center text-white bg-[#14141E] hover:bg-[#FF2E79] hover:text-black w-full rounded-[12px] border border-[#FF2E79] transition-all duration-200">
                             Subscribe now
                         </Button>
                         <Separator className="w-full h-px bg-gray-700/30 mb-4 mt-8" />

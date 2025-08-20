@@ -36,7 +36,7 @@ interface SidebarProps {
 
 export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [activeSection, setActiveSection] = useState("General");
+    const [activeSection, setActiveSection] = useState("Home");
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
