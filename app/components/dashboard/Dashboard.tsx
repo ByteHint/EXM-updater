@@ -41,9 +41,6 @@ export default function Dashboard() {
         } else if (section === "Hardware") {
             console.warn("Dashboard: Setting activeCategory to cpu");
             setActiveCategory("cpu");
-        } else if (section === "Demo") {
-            console.warn("Dashboard: Setting activeCategory to demo");
-            setActiveCategory("demo");
         }
         // No need to reset category for Home as it has its own component
     };
@@ -102,10 +99,6 @@ export default function Dashboard() {
         { category: "peripherals", isEnabled: true, alertCount: 0 },
         { category: "peripherals", isEnabled: false, alertCount: 3 },
         { category: "peripherals", isEnabled: true, alertCount: 0 },
-        // Demo Settings (3)
-        { category: "demo", isEnabled: true, alertCount: 1 },
-        { category: "demo", isEnabled: false, alertCount: 2 },
-        { category: "demo", isEnabled: true, alertCount: 0 },
     ];
 
     // Filter settings based on active category

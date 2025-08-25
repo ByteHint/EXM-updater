@@ -152,7 +152,7 @@ const SettingCard = ({
     return (
         <div className="relative">
             <Card className="bg-[#0F0F17] border-[#14141e] hover:border-pink-600/50 transition-colors duration-200 h-full">
-                <CardContent className="p-4 h-full flex flex-col justify-between">
+                <CardContent className="h-full flex flex-col justify-between">
                     <div>
                         <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-3">
@@ -253,7 +253,11 @@ const SettingCard = ({
                                     disabled={actionLoading}
                                     className="px-3 py-1 text-xs bg-pink-600 hover:bg-pink-500 disabled:opacity-70 text-white rounded transition-colors"
                                 >
-                                    {actionLoading ? "Clearing..." : actionSuccess ? "Cleared!" : "Clear Temp Files"}
+                                    {actionLoading
+                                        ? "Clearing..."
+                                        : actionSuccess
+                                          ? "Cleared!"
+                                          : "Clear Temp Files"}
                                 </button>
                             ) : (
                                 <>
@@ -692,7 +696,7 @@ export const SettingsSection = ({
     return (
         <div className="flex-1 overflow-y-auto">
             {/* Settings Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {sortedSettings.map((setting, index) => (
                     <SettingCard
                         key={`${setting.title}-${index}`}

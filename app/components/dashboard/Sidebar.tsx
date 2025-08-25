@@ -172,7 +172,6 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
 
     const generalMenuItems = [
         { label: "Home", icon: Home },
-        { label: "Demo", icon: Sparkles },
         { label: "Backups", icon: Download },
         { label: "Fixes", icon: Wrench },
     ];
@@ -190,7 +189,7 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
     // Helper function to get user display name
     const getUserDisplayName = () => {
         if (!user) return "Guest";
-        return user.name || "User";
+        return user.name || user.email.split("@")[0];
     };
 
     // Helper function to get user subscription status
