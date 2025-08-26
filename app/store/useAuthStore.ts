@@ -355,7 +355,12 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
             return true;
         }
         // If backend rejects, roll back to email step and show error
-        set({ error: response.message || "Could not process request.", isLoading: false, authFlowStatus: "idle", flowEmail: null });
+        set({
+            error: response.message || "Could not process request.",
+            isLoading: false,
+            authFlowStatus: "idle",
+            flowEmail: null,
+        });
         return false;
     },
 
