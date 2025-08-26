@@ -346,14 +346,16 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
      * @returns `true` if the request was accepted, `false` otherwise.
      */
     forgotPassword: async (email) => {
-        set({ isLoading: true, error: null });
+        // Optimistically move to OTP step to avoid flicker while request is in-flight
+        set({ authFlowStatus: "awaiting-otp", flowEmail: email, isLoading: true, error: null });
         const response = await apiClient.forgotPassword(email);
 
         if (response.success) {
-            set({ isLoading: false, authFlowStatus: "awaiting-otp", flowEmail: email });
+            set({ isLoading: false });
             return true;
         }
-        set({ error: response.message || "Could not process request.", isLoading: false });
+        // If backend rejects, roll back to email step and show error
+        set({ error: response.message || "Could not process request.", isLoading: false, authFlowStatus: "idle", flowEmail: null });
         return false;
     },
 

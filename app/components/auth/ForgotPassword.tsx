@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import AuthLayout from "./AuthLayout";
 import { Button } from "../ui/button";
 import OtpStep from "./OptStep";
@@ -33,10 +33,7 @@ export default function ForgotPassword({ onSwitchToSignIn }: ForgotPasswordProps
 
     const allValid = Object.values(getPasswordValidationStatus(password)).every(Boolean);
 
-    // Reset auth flow when component mounts
-    useEffect(() => {
-        resetAuthFlow();
-    }, [resetAuthFlow]);
+    // Keep current auth flow to avoid flicker between layout and OTP
 
     const handleSendCode = async () => {
         clearError();
@@ -45,14 +42,14 @@ export default function ForgotPassword({ onSwitchToSignIn }: ForgotPasswordProps
 
     const handleVerifyOtp = async () => {
         clearError();
-        await verifyOtp(email, otp);
+        await verifyOtp(otp);
     };
 
     const handleResetPassword = async () => {
         clearError();
         const success = await resetPassword(password);
         if (success) {
-            onSwitchToSignIn();
+            // User is now authenticated; router will redirect to /dashboard
         }
     };
 
@@ -125,7 +122,7 @@ export default function ForgotPassword({ onSwitchToSignIn }: ForgotPasswordProps
                         <PasswordInputWithStrength
                             password={password}
                             setPassword={setPassword}
-                            isDisabled={isLoading}
+                            _isDisabled={isLoading}
                         />
                         {error && <div className="text-red-500 text-sm text-center">{error}</div>}
                         <Button

@@ -2,16 +2,30 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { ShieldUser, Star, Users } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ForgotPassword from "../auth/ForgotPassword";
 import "./styles.css";
 import SignIn from "../auth/SignIn";
 import SignUp from "../auth/SignUp";
+import { useAuthStore } from "@/app/store/useAuthStore";
 
 type AuthFlow = "signup" | "signin" | "forgot";
 
 export default function Welcome() {
-    const [authFlow, setAuthFlow] = useState<AuthFlow>("signup");
+    const authFlowStatus = useAuthStore((state) => state.authFlowStatus);
+    // Initialize from global flow to avoid resetting back to signup during OTP/reset flows
+    const [authFlow, setAuthFlow] = useState<AuthFlow>(() =>
+        authFlowStatus === "awaiting-otp" || authFlowStatus === "awaiting-password-reset"
+            ? "forgot"
+            : "signup",
+    );
+
+    // Keep the view in sync with the multi-step status
+    useEffect(() => {
+        if (authFlowStatus === "awaiting-otp" || authFlowStatus === "awaiting-password-reset") {
+            setAuthFlow("forgot");
+        }
+    }, [authFlowStatus]);
 
     const handleSwitchToSignIn = () => setAuthFlow("signin");
     const handleSwitchToSignUp = () => setAuthFlow("signup");
