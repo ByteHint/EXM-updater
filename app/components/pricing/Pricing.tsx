@@ -198,7 +198,6 @@ const Pricing: React.FC = () => {
                     <CardContent className="p-6">
                         <h2 className="text-base font-semibold mb-2 -mt-5">Annually</h2>
                         <div className="absolute top-6 right-6">
-                            <button className="inline-flex items-center justify-center rounded-full bg-[#FF2E79] text-black text-xs font-semibold px-4 py-2 shadow-lg">
                                 Save 50%
                             </button>
                         </div>
