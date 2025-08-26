@@ -36,7 +36,7 @@ interface SidebarProps {
 
 export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [activeSection, setActiveSection] = useState("General");
+    const [activeSection, setActiveSection] = useState("Home");
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
@@ -189,7 +189,7 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
     // Helper function to get user display name
     const getUserDisplayName = () => {
         if (!user) return "Guest";
-        return user.name || "User";
+        return user.name || user.email.split("@")[0];
     };
 
     // Helper function to get user subscription status

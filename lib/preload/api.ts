@@ -30,6 +30,22 @@ const api = {
     removeCheckAuthStatus: () => {
         ipcRenderer.removeAllListeners("check-auth-status");
     },
+    // System monitoring methods
+    getSystemInfo: () => {
+        return ipcRenderer.invoke("get-system-info");
+    },
+    getCpuUsage: () => {
+        return ipcRenderer.invoke("get-cpu-usage");
+    },
+    getMemoryUsage: () => {
+        return ipcRenderer.invoke("get-memory-usage");
+    },
+    getGpuUsage: () => {
+        return ipcRenderer.invoke("get-gpu-usage");
+    },
+    getHardwareId: () => {
+        return ipcRenderer.invoke("get-hardware-id");
+    },
 };
 
 export default api;

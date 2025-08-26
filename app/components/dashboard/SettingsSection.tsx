@@ -31,6 +31,7 @@ interface SettingCardProps {
     uninstall?: boolean;
     dropdown?: boolean;
     optimize?: boolean;
+    actionType?: "clear-temp";
 }
 
 interface SettingsSectionProps {
@@ -112,6 +113,7 @@ const SettingCard = ({
     uninstall = false,
     dropdown = false,
     optimize = false,
+    actionType,
     isSidebarCollapsed = false,
 }: SettingCardComponentProps) => {
     const [enabled, setEnabled] = useState(isEnabled);
@@ -119,6 +121,23 @@ const SettingCard = ({
     const [selectedOption, setSelectedOption] = useState("High");
     const [isConfiguring, setIsConfiguring] = useState(false);
     const [sliderValue, setSliderValue] = useState([50]);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [actionSuccess, setActionSuccess] = useState(false);
+
+    const handleActionClick = async () => {
+        if (actionType === "clear-temp") {
+            try {
+                setActionLoading(true);
+                await window.api.invoke("clear-temp-files");
+                setActionSuccess(true);
+                setTimeout(() => setActionSuccess(false), 1500);
+            } catch (e) {
+                console.error("Clear temp files failed:", e);
+            } finally {
+                setActionLoading(false);
+            }
+        }
+    };
 
     const renderIcon = () => {
         if (category === "games") {
@@ -133,7 +152,7 @@ const SettingCard = ({
     return (
         <div className="relative">
             <Card className="bg-[#0F0F17] border-[#14141e] hover:border-pink-600/50 transition-colors duration-200 h-full">
-                <CardContent className="p-4 h-full flex flex-col justify-between">
+                <CardContent className="h-full flex flex-col justify-between">
                     <div>
                         <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-3">
@@ -228,23 +247,39 @@ const SettingCard = ({
                         </div>
 
                         <div className="flex items-center gap-2">
-                            {!optimize ? (
+                            {actionType ? (
+                                <button
+                                    onClick={handleActionClick}
+                                    disabled={actionLoading}
+                                    className="px-3 py-1 text-xs bg-pink-600 hover:bg-pink-500 disabled:opacity-70 text-white rounded transition-colors"
+                                >
+                                    {actionLoading
+                                        ? "Clearing..."
+                                        : actionSuccess
+                                          ? "Cleared!"
+                                          : "Clear Temp Files"}
+                                </button>
+                            ) : (
                                 <>
-                                    {uninstall ? (
-                                        <div className="flex items-center gap-2">
-                                            <button className="px-3 py-1 text-xs bg-red-600 hover:bg-red-500 text-white rounded transition-colors">
-                                                Uninstall
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <Switch
-                                            checked={enabled}
-                                            onCheckedChange={() => setEnabled(!enabled)}
-                                            className="data-[state=checked]:bg-pink-500 data-[state=unchecked]:bg-gray-600 data-[state=unchecked]:border-grey-650"
-                                        />
-                                    )}
+                                    {!optimize ? (
+                                        <>
+                                            {uninstall ? (
+                                                <div className="flex items-center gap-2">
+                                                    <button className="px-3 py-1 text-xs bg-red-600 hover:bg-red-500 text-white rounded transition-colors">
+                                                        Uninstall
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <Switch
+                                                    checked={enabled}
+                                                    onCheckedChange={() => setEnabled(!enabled)}
+                                                    className="data-[state=checked]:bg-pink-500 data-[state=unchecked]:bg-gray-600 data-[state=unchecked]:border-grey-650"
+                                                />
+                                            )}
+                                        </>
+                                    ) : null}
                                 </>
-                            ) : null}
+                            )}
                         </div>
                     </div>
                 </CardContent>
@@ -299,6 +334,16 @@ const SettingCard = ({
 };
 
 const allSettingsData: SettingCardProps[] = [
+    // Maintenance Utilities
+    {
+        title: "Clear Temporary Files",
+        description:
+            "Frees up disk space by removing files in the system temporary directory. Safe to run.",
+        alertCount: 0,
+        isEnabled: true,
+        category: "core",
+        actionType: "clear-temp",
+    },
     // Core Settings
     {
         title: "Set System32 priority",
@@ -651,7 +696,7 @@ export const SettingsSection = ({
     return (
         <div className="flex-1 overflow-y-auto">
             {/* Settings Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {sortedSettings.map((setting, index) => (
                     <SettingCard
                         key={`${setting.title}-${index}`}

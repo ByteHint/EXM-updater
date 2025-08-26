@@ -49,6 +49,20 @@ declare global {
             removeOAuthCallback: () => void;
             onCheckAuthStatus: (callback: () => void) => void;
             removeCheckAuthStatus: () => void;
+            // System monitoring methods
+            getSystemInfo: () => Promise<any>;
+            getCpuUsage: () => Promise<number>;
+            getMemoryUsage: () => Promise<any>;
+            getGpuUsage: () => Promise<number>;
+            getHardwareId: () => Promise<string>;
+            // Maintenance
+            clearTempFiles?: () => Promise<{
+                success: boolean;
+                removedFiles: number;
+                removedDirs: number;
+                errors: number;
+                tempDir: string;
+            }>;
         };
     }
 }
