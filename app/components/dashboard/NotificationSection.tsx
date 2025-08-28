@@ -10,6 +10,8 @@ import {
     Monitor,
     Keyboard,
     MemoryStick,
+    Wrench,
+    Trash,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
@@ -46,8 +48,20 @@ export const NotificationSection = ({
         { id: "peripherals", label: "Peripherals", icon: Keyboard },
     ];
 
+    const debloatNavItems = [
+        { id: "clean", label: "Clean Up", icon: Trash },
+        { id: "services", label: "Services", icon: Wrench },
+        { id: "deapps", label: "Apps", icon: AppWindow },
+        { id: "autoruns", label: "Autoruns", icon: Wrench },
+    ];
+
     // Determine which navigation items to show based on sidebar section
-    const currentNavItems = activeSidebarSection === "Hardware" ? hardwareNavItems : navItems;
+    const currentNavItems =
+        activeSidebarSection === "Hardware"
+            ? hardwareNavItems
+            : activeSidebarSection === "Debloat"
+            ? debloatNavItems
+            : navItems;
 
     // Update activeTab when sidebar section changes
     useEffect(() => {
@@ -56,9 +70,13 @@ export const NotificationSection = ({
             console.warn("NotificationSection: Setting activeTab to cpu");
             setActiveTab("cpu");
             // Don't automatically call onTabChange here, let user click
-        } else {
+        } else if (activeSidebarSection === "General") {
             console.warn("NotificationSection: Setting activeTab to core");
             setActiveTab("core");
+            // Don't automatically call onTabChange here, let user click
+        } else if (activeSidebarSection === "Debloat") {
+            console.warn("NotificationSection: Setting activeTab to clean");
+            setActiveTab("clean");
             // Don't automatically call onTabChange here, let user click
         }
     }, [activeSidebarSection]);
@@ -69,6 +87,10 @@ export const NotificationSection = ({
     console.warn(
         "NotificationSection: Showing hardware items:",
         activeSidebarSection === "Hardware",
+    );
+    console.warn(
+        "NotificationSection: Showing debloat items:",
+        activeSidebarSection === "Debloat",
     );
 
     const handleTabChange = (newTab: string) => {

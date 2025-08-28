@@ -8,6 +8,7 @@ import {
     Wand2,
     Cpu,
     Wrench,
+    Trash,
 } from "lucide-react";
 import { Button } from "../ui/button";
 
@@ -75,11 +76,24 @@ export const ActionItemsSection = ({ activeCategory = "general" }: ActionItemsSe
             icon: Cpu,
         },
 
-        debloat: {
-            title: "Debloat",
-            description: "Remove unnecessary apps and services.",
+        clean: {
+            title: "Clean Up",
+            description: "Remove unnecessary files and apps.",
+            icon: Trash,
+        },
+        
+        autoruns: {
+            title: "Autoruns",
+            description: "Manage and optimize autorun settings.",
             icon: Wrench,
         },
+
+        services: {
+            title: "Services",
+            description: "Manage and optimize services.",
+            icon: Wrench,
+        },
+        
     };
 
     const current = categoryInfo[activeCategory as keyof typeof categoryInfo] || categoryInfo.core;
