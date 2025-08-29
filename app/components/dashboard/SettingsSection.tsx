@@ -16,6 +16,7 @@ import {
     Chrome,
     MessageSquare,
     Monitor,
+    BrushCleaning,
 } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Switch } from "../ui/switch";
@@ -59,6 +60,11 @@ interface SettingCardComponentProps extends SettingCardProps {
     isSidebarCollapsed?: boolean;
 }
 
+interface DebloatCardProps {
+    title: string;
+    hasClean?: boolean;
+    size?: string;
+}
 const GameIcon = ({ gameName, size = 52, className = "" }: GameIconProps) => {
     const iconProps = {
         width: size,
@@ -128,9 +134,15 @@ const SettingCard = ({
         if (actionType === "clear-temp") {
             try {
                 setActionLoading(true);
+                const minRunningMs = 10000;
+                const start = Date.now();
                 await window.api.invoke("clear-temp-files");
+                const elapsed = Date.now() - start;
+                if (elapsed < minRunningMs) {
+                    await new Promise((resolve) => setTimeout(resolve, minRunningMs - elapsed));
+                }
                 setActionSuccess(true);
-                setTimeout(() => setActionSuccess(false), 1500);
+                setTimeout(() => setActionSuccess(false), 5000);
             } catch (e) {
                 console.error("Clear temp files failed:", e);
             } finally {
@@ -448,7 +460,7 @@ const allSettingsData: SettingCardProps[] = [
             "Spotify is a digital music service that gives you access to millions of songs.",
         alertCount: 0,
         isEnabled: true,
-        optimize: true,
+        uninstall: true,
         category: "apps",
     },
     {
@@ -456,7 +468,7 @@ const allSettingsData: SettingCardProps[] = [
         description: "Google Chrome is a web browser developed by Google.",
         alertCount: 3,
         isEnabled: false,
-        optimize: true,
+        uninstall: true,
         category: "apps",
     },
     {
@@ -464,7 +476,7 @@ const allSettingsData: SettingCardProps[] = [
         description: "Discord is a voice, video, and text communication app.",
         alertCount: 0,
         isEnabled: true,
-        optimize: true,
+        uninstall: true,
         category: "apps",
     },
 
@@ -636,6 +648,75 @@ const allSettingsData: SettingCardProps[] = [
     },
 ];
 
+// Debloat helpers and UI
+const isDebloatCategory = (cat: string) => ["clean", "services", "apps", "autorun"].includes(cat);
+
+const DebloatCard = ({ title, hasClean = false, size }: DebloatCardProps) => {
+	const [actionLoading, setActionLoading] = useState(false);
+	const [actionSuccess, setActionSuccess] = useState(false);
+
+	const handleClean = async () => {
+		try {
+			setActionLoading(true);
+			const minRunningMs = 10000;
+			const start = Date.now();
+			// Example action hook; replace with your actual IPC/event if needed
+			await window.api.invoke?.("debloat-action", { action: "clean", title });
+			const elapsed = Date.now() - start;
+			if (elapsed < minRunningMs) {
+				await new Promise((resolve) => setTimeout(resolve, minRunningMs - elapsed));
+			}
+			setActionSuccess(true);
+			setTimeout(() => setActionSuccess(false), 5000);
+		} catch (e) {
+			console.error("Debloat action failed:", e);
+		} finally {
+			setActionLoading(false);
+		}
+	};
+
+	return (
+		<Card className="bg-[#0F0F17] border-[#14141e] hover:border-pink-600/50 transition-colors duration-200 h-full">
+			<CardContent className="h-full flex items-center justify-between">
+				<h3 className="text-white font-medium text-sm leading-tight">{title}</h3>
+				<div className="flex items-center gap-3">
+					{size && <span className="text-xs text-core-grey400">{size}</span>}
+					{hasClean && (
+						<button
+							onClick={handleClean}
+							disabled={actionLoading}
+							className="px-3 py-1 text-xs bg-[#1A1A24] hover:bg-pink-500 disabled:opacity-70 text-white rounded transition-colors flex items-center gap-1.5"
+						>
+							<BrushCleaning className="w-3.5 h-3.5" />
+							{actionLoading ? "Running..." : actionSuccess ? "Done!" : "Clean"}
+						</button>
+					)}
+				</div>
+			</CardContent>
+		</Card>
+	);
+};
+
+const debloatData: Record<string, DebloatCardProps[]> = {
+	clean: [
+		{ title: "Temporary files", hasClean: true, size: "240.57 MB" },
+		{ title: "Thumbnail cache", hasClean: true, size: "240.57 MB" },
+		{ title: "Windows Defender files", hasClean: true, size: "240.57 MB" },
+		{ title: "System error files", hasClean: true, size: "240.57 MB" },
+		{ title: "Old ChkDsk files", hasClean: true, size: "240.57 MB" },
+		{ title: "DirectX Shader Cache", hasClean: true, size: "240.57 MB" },
+	],
+	services: [
+		{ title: "Disable Telemetry" },
+		{ title: "Disable Cortana" },
+		{ title: "Disable DiagTrack" },
+	],
+	autorun: [
+		{ title: "Disable Startup Apps" },
+		{ title: "Disable Game Bar Startup" },
+	],
+};
+
 export const SettingsSection = ({
     activeCategory = "core",
     searchQuery = "",
@@ -643,7 +724,27 @@ export const SettingsSection = ({
     sortState = "name",
     sortDirection = "asc",
     isSidebarCollapsed = false,
-}: SettingsSectionProps) => {
+}: SettingsSectionProps) => {   
+    const parseSizeToBytes = (size?: string): number => {
+        if (!size) return 0;
+        const match = size.match(/([0-9]+\.?[0-9]*)\s*(KB|MB|GB)/i);
+        if (!match) return 0;
+        const value = parseFloat(match[1]);
+        const unit = match[2].toUpperCase();
+        const unitMap: Record<string, number> = { KB: 1024, MB: 1024 ** 2, GB: 1024 ** 3 };
+        return Math.round(value * (unitMap[unit] || 1));
+    };
+
+    const formatBytes = (bytes: number): string => {
+        if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+        if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(2)} MB`;
+        if (bytes >= 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+        return `${bytes} B`;
+    };
+
+    const totalCleanBytes = (debloatData.clean || []).reduce((sum, i) => sum + parseSizeToBytes(i.size), 0);
+    const totalCleanLabel = totalCleanBytes ? `${formatBytes(totalCleanBytes)} Total` : "";
+    const [cleanOpen, setCleanOpen] = useState(true);
     // Filter settings based on active category, search query, and filter state
     const filteredSettings = allSettingsData.filter((setting) => {
         const matchesCategory = activeCategory === "all" || setting.category === activeCategory;
@@ -695,26 +796,64 @@ export const SettingsSection = ({
 
     return (
         <div className="flex-1 overflow-y-auto">
-            {/* Settings Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {sortedSettings.map((setting, index) => (
-                    <SettingCard
-                        key={`${setting.title}-${index}`}
-                        {...setting}
-                        isSidebarCollapsed={isSidebarCollapsed}
-                    />
-                ))}
-            </div>
+            {isDebloatCategory(activeCategory) ? (
+                <>
+                    {activeCategory === "clean" && (
+                        <button
+                            onClick={() => setCleanOpen(!cleanOpen)}
+                            className="flex items-center justify-between w-full mb-3 rounded-[10px] border border-[#1e1e28] bg-core-grey800 px-3 py-2"
+                        >
+                            <div className="flex items-center gap-2">
+                                <div className="text-sm text-semibold text-white">Files</div>
+                                <span className="text-xs text-[#4F4F55] pt-0.5">{totalCleanLabel}</span>
+                            </div>
+                            <div className="flex items-center">
+                                <ChevronDown className={`w-4 h-4 text-white transition-transform ${cleanOpen ? "rotate-180" : ""}`} />
+                            </div>
+                        </button>
+                    )}
 
-            {/* Empty state */}
-            {sortedSettings.length === 0 && (
-                <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <SlidersHorizontal className="w-8 h-8 text-gray-400" />
+                    <div className="flex flex-col gap-2">
+                        {(debloatData[activeCategory] ?? [])
+                            .filter((_) => (activeCategory === "clean" ? cleanOpen : true))
+                            .map((item, index) => (
+                                <DebloatCard key={`${item.title}-${index}`} {...item} />
+                            ))}
                     </div>
-                    <h3 className="text-lg font-medium text-white mb-2">No settings found</h3>
-                    <p className="text-gray-400">Try adjusting your search or filter criteria</p>
-                </div>
+
+                    {(debloatData[activeCategory] ?? []).length === 0 && (
+                        <div className="text-center py-12">
+                            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <SlidersHorizontal className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <h3 className="text-lg font-medium text-white mb-2">No debloat items found</h3>
+                            <p className="text-gray-400">Try switching tabs or check your configuration</p>
+                        </div>
+                    )}
+                </>
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {sortedSettings.map((setting, index) => (
+                            <SettingCard
+                                key={`${setting.title}-${index}`}
+                                {...setting}
+                                isSidebarCollapsed={isSidebarCollapsed}
+                            />
+                        ))}
+                    </div>
+                    
+                    {/* Empty state */}
+                    {sortedSettings.length === 0 && (
+                        <div className="text-center py-12">
+                            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <SlidersHorizontal className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <h3 className="text-lg font-medium text-white mb-2">No settings found</h3>
+                            <p className="text-gray-400">Try adjusting your search or filter criteria</p>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

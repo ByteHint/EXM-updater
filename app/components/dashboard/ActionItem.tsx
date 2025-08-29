@@ -81,7 +81,7 @@ export const ActionItemsSection = ({ activeCategory = "general" }: ActionItemsSe
             description: "Remove unnecessary files and apps.",
             icon: Trash,
         },
-        
+
         autoruns: {
             title: "Autoruns",
             description: "Manage and optimize autorun settings.",
@@ -93,7 +93,6 @@ export const ActionItemsSection = ({ activeCategory = "general" }: ActionItemsSe
             description: "Manage and optimize services.",
             icon: Wrench,
         },
-        
     };
 
     const current = categoryInfo[activeCategory as keyof typeof categoryInfo] || categoryInfo.core;

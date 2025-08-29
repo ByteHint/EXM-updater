@@ -38,12 +38,10 @@ export default function Dashboard() {
         if (section === "General") {
             console.warn("Dashboard: Setting activeCategory to core");
             setActiveCategory("core");
-        } 
-        else if (section === "Hardware") {
+        } else if (section === "Hardware") {
             console.warn("Dashboard: Setting activeCategory to cpu");
             setActiveCategory("cpu");
-        }
-        else if (section === "Debloat") {
+        } else if (section === "Debloat") {
             console.warn("Dashboard: Setting activeCategory to clean");
             setActiveCategory("clean");
         }

@@ -60,8 +60,8 @@ export const NotificationSection = ({
         activeSidebarSection === "Hardware"
             ? hardwareNavItems
             : activeSidebarSection === "Debloat"
-            ? debloatNavItems
-            : navItems;
+              ? debloatNavItems
+              : navItems;
 
     // Update activeTab when sidebar section changes
     useEffect(() => {
@@ -88,10 +88,7 @@ export const NotificationSection = ({
         "NotificationSection: Showing hardware items:",
         activeSidebarSection === "Hardware",
     );
-    console.warn(
-        "NotificationSection: Showing debloat items:",
-        activeSidebarSection === "Debloat",
-    );
+    console.warn("NotificationSection: Showing debloat items:", activeSidebarSection === "Debloat");
 
     const handleTabChange = (newTab: string) => {
         console.warn("NotificationSection: Tab clicked:", newTab);

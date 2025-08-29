@@ -1,10 +1,11 @@
 import { Check, ChevronDown } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "./button";
 
 interface DropdownOption {
     value: string;
-    label: string;
+    label: React.ReactNode;
     icon?: React.ReactNode;
 }
 
@@ -12,7 +13,7 @@ interface DropdownProps {
     options: DropdownOption[];
     value: string;
     onValueChange: (value: string) => void;
-    placeholder?: string;
+    placeholder?: React.ReactNode;
     className?: string;
     buttonClassName?: string;
 }
@@ -27,6 +28,11 @@ export const Dropdown = ({
 }: DropdownProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    const [menuRect, setMenuRect] = useState<{ top: number; left: number; width: number } | null>(
+        null,
+    );
+    const [availableHeight, setAvailableHeight] = useState<number>(0);
 
     const selectedOption = options.find((option) => option.value === value);
 
@@ -48,12 +54,33 @@ export const Dropdown = ({
         setIsOpen(false);
     };
 
+    // Position the menu using a portal to avoid clipping/stacking issues
+    useLayoutEffect(() => {
+        if (!isOpen) return;
+        const update = () => {
+            const btn = buttonRef.current;
+            if (!btn) return;
+            const rect = btn.getBoundingClientRect();
+            setMenuRect({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+            const spaceBelow = Math.max(140, Math.round(window.innerHeight - rect.bottom - 8));
+            setAvailableHeight(spaceBelow);
+        };
+        update();
+        window.addEventListener("resize", update);
+        window.addEventListener("scroll", update, true);
+        return () => {
+            window.removeEventListener("resize", update);
+            window.removeEventListener("scroll", update, true);
+        };
+    }, [isOpen]);
+
     return (
         <div className={`relative ${className}`} ref={dropdownRef}>
             <Button
                 variant="outline"
                 onClick={() => setIsOpen(!isOpen)}
                 className={`flex items-center justify-between gap-2 px-3 py-[9px] h-auto rounded-[10px] border border-dashed border-[#1e1e28] bg-core-grey800 text-white hover:bg-core-grey700 ${buttonClassName}`}
+                ref={buttonRef}
             >
                 <div className="flex items-center gap-2">
                     {selectedOption?.icon}
@@ -64,27 +91,40 @@ export const Dropdown = ({
                 />
             </Button>
 
-            {isOpen && (
-                <div className="absolute top-full left-0 mt-1 w-full min-w-[160px] bg-[#0f0f18] border border-[#1e1e28] rounded-[10px] shadow-lg z-50 overflow-hidden">
-                    {options.map((option) => (
-                        <button
-                            key={option.value}
-                            onClick={() => handleSelect(option.value)}
-                            className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-left hover:bg-[#1a1a24] transition-colors"
-                        >
-                            <div className="flex items-center gap-2">
-                                {option.icon}
-                                <span
-                                    className={`${value === option.value ? "text-white" : "text-core-grey400"}`}
-                                >
-                                    {option.label}
-                                </span>
-                            </div>
-                            {value === option.value && <Check className="w-4 h-4 text-white" />}
-                        </button>
-                    ))}
-                </div>
-            )}
+            {isOpen &&
+                menuRect &&
+                createPortal(
+                    <div
+                        style={{
+                            position: "fixed",
+                            top: Math.round(menuRect.top),
+                            left: Math.round(menuRect.left),
+                            width: Math.round(menuRect.width),
+                            zIndex: 999999,
+                            backgroundColor: "#0F0F17",
+                            maxHeight: availableHeight,
+                            overflowY: "auto",
+                        }}
+                        className="min-w-[200px] border border-[#1e1e28] rounded-[12px] shadow-2xl overflow-hidden p-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-opacity-100"
+                    >
+                        {options.map((option) => (
+                            <button
+                                key={option.value}
+                                onClick={() => handleSelect(option.value)}
+                                className="w-full text-left rounded-md hover:bg-[#1a1a24] transition-colors px-3 py-2.5 mb-1 last:mb-0 flex items-center justify-between gap-3 focus:outline-none"
+                            >
+                                <div className="flex items-center gap-2">
+                                    {option.icon}
+                                    <span className={`${value === option.value ? "text-white" : "text-gray-300"}`}>
+                                        {option.label}
+                                    </span>
+                                </div>
+                                {value === option.value && <Check className="w-4 h-4 text-white" />}
+                            </button>
+                        ))}
+                    </div>,
+                    document.body,
+                )}
         </div>
     );
 };
