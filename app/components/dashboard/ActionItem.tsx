@@ -93,6 +93,11 @@ export const ActionItemsSection = ({ activeCategory = "general" }: ActionItemsSe
             description: "Manage and optimize services.",
             icon: Wrench,
         },
+        deapps: {
+            title: "Application Management",
+            description: "Manage and optimize installed applications.",
+            icon: AppWindow,
+        },
     };
 
     const current = categoryInfo[activeCategory as keyof typeof categoryInfo] || categoryInfo.core;

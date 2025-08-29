@@ -16,6 +16,7 @@ interface DropdownProps {
     placeholder?: React.ReactNode;
     className?: string;
     buttonClassName?: string;
+    size?: "sm" | "md";
 }
 
 export const Dropdown = ({
@@ -25,6 +26,7 @@ export const Dropdown = ({
     placeholder = "Select option",
     className = "",
     buttonClassName = "",
+    size = "md",
 }: DropdownProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -74,17 +76,25 @@ export const Dropdown = ({
         };
     }, [isOpen]);
 
+    const sizeButtonClasses =
+        size === "sm"
+            ? "px-2 py-1 h-7 text-xs"
+            : "px-3 py-[9px] h-auto text-sm";
+    const sizeItemClasses = size === "sm" ? "px-2 py-1.5 text-xs" : "px-3 py-2.5";
+
     return (
         <div className={`relative ${className}`} ref={dropdownRef}>
             <Button
                 variant="outline"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`flex items-center justify-between gap-2 px-3 py-[9px] h-auto rounded-[10px] border border-dashed border-[#1e1e28] bg-core-grey800 text-white hover:bg-core-grey700 ${buttonClassName}`}
+                className={`flex items-center justify-between gap-2 ${sizeButtonClasses} rounded-[10px] border border-dashed border-[#1e1e28] bg-core-grey800 text-white hover:bg-core-grey700 ${buttonClassName}`}
                 ref={buttonRef}
             >
                 <div className="flex items-center gap-2">
                     {selectedOption?.icon}
-                    <span className="text-sm">{selectedOption?.label || placeholder}</span>
+                    <span className={size === "sm" ? "text-xs" : "text-sm"}>
+                        {selectedOption?.label || placeholder}
+                    </span>
                 </div>
                 <ChevronDown
                     className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -111,13 +121,11 @@ export const Dropdown = ({
                             <button
                                 key={option.value}
                                 onClick={() => handleSelect(option.value)}
-                                className="w-full text-left rounded-md hover:bg-[#1a1a24] transition-colors px-3 py-2.5 mb-1 last:mb-0 flex items-center justify-between gap-3 focus:outline-none"
+                                className={`w-full text-left rounded-md hover:bg-[#1a1a24] transition-colors ${sizeItemClasses} mb-1 last:mb-0 flex items-center justify-between gap-3 focus:outline-none`}
                             >
                                 <div className="flex items-center gap-2">
                                     {option.icon}
-                                    <span
-                                        className={`${value === option.value ? "text-white" : "text-gray-300"}`}
-                                    >
+                                    <span className={`${value === option.value ? "text-white" : "text-gray-300"} ${size === "sm" ? "text-xs" : "text-sm"}`}>
                                         {option.label}
                                     </span>
                                 </div>
