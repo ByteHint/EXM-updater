@@ -115,7 +115,9 @@ export const Dropdown = ({
                             >
                                 <div className="flex items-center gap-2">
                                     {option.icon}
-                                    <span className={`${value === option.value ? "text-white" : "text-gray-300"}`}>
+                                    <span
+                                        className={`${value === option.value ? "text-white" : "text-gray-300"}`}
+                                    >
                                         {option.label}
                                     </span>
                                 </div>

@@ -132,21 +132,20 @@ const SettingCard = ({
 
     const handleActionClick = async () => {
         if (actionType === "clear-temp") {
+            setActionLoading(true);
+            const minRunningMs = 5000;
+            const start = Date.now();
             try {
-                setActionLoading(true);
-                const minRunningMs = 10000;
-                const start = Date.now();
                 await window.api.invoke("clear-temp-files");
+            } catch (e) {
+                console.error("Clear temp files failed:", e);
+            } finally {
                 const elapsed = Date.now() - start;
                 if (elapsed < minRunningMs) {
                     await new Promise((resolve) => setTimeout(resolve, minRunningMs - elapsed));
                 }
-                setActionSuccess(true);
-                setTimeout(() => setActionSuccess(false), 5000);
-            } catch (e) {
-                console.error("Clear temp files failed:", e);
-            } finally {
                 setActionLoading(false);
+                setActionSuccess(true);
             }
         }
     };
@@ -268,7 +267,7 @@ const SettingCard = ({
                                     {actionLoading
                                         ? "Clearing..."
                                         : actionSuccess
-                                          ? "Cleared!"
+                                          ? "Done!"
                                           : "Clear Temp Files"}
                                 </button>
                             ) : (
@@ -652,69 +651,64 @@ const allSettingsData: SettingCardProps[] = [
 const isDebloatCategory = (cat: string) => ["clean", "services", "apps", "autorun"].includes(cat);
 
 const DebloatCard = ({ title, hasClean = false, size }: DebloatCardProps) => {
-	const [actionLoading, setActionLoading] = useState(false);
-	const [actionSuccess, setActionSuccess] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [actionSuccess, setActionSuccess] = useState(false);
 
-	const handleClean = async () => {
-		try {
-			setActionLoading(true);
-			const minRunningMs = 10000;
-			const start = Date.now();
-			// Example action hook; replace with your actual IPC/event if needed
-			await window.api.invoke?.("debloat-action", { action: "clean", title });
-			const elapsed = Date.now() - start;
-			if (elapsed < minRunningMs) {
-				await new Promise((resolve) => setTimeout(resolve, minRunningMs - elapsed));
-			}
-			setActionSuccess(true);
-			setTimeout(() => setActionSuccess(false), 5000);
-		} catch (e) {
-			console.error("Debloat action failed:", e);
-		} finally {
-			setActionLoading(false);
-		}
-	};
+    const handleClean = async () => {
+        setActionLoading(true);
+        const minRunningMs = 5000;
+        const start = Date.now();
+        try {
+            await window.api.invoke?.("debloat-action", { action: "clean", title });
+        } catch (e) {
+            console.error("Debloat action failed:", e);
+        } finally {
+            const elapsed = Date.now() - start;
+            if (elapsed < minRunningMs) {
+                await new Promise((resolve) => setTimeout(resolve, minRunningMs - elapsed));
+            }
+            setActionLoading(false);
+            setActionSuccess(true);
+        }
+    };
 
-	return (
-		<Card className="bg-[#0F0F17] border-[#14141e] hover:border-pink-600/50 transition-colors duration-200 h-full">
-			<CardContent className="h-full flex items-center justify-between">
-				<h3 className="text-white font-medium text-sm leading-tight">{title}</h3>
-				<div className="flex items-center gap-3">
-					{size && <span className="text-xs text-core-grey400">{size}</span>}
-					{hasClean && (
-						<button
-							onClick={handleClean}
-							disabled={actionLoading}
-							className="px-3 py-1 text-xs bg-[#1A1A24] hover:bg-pink-500 disabled:opacity-70 text-white rounded transition-colors flex items-center gap-1.5"
-						>
-							<BrushCleaning className="w-3.5 h-3.5" />
-							{actionLoading ? "Running..." : actionSuccess ? "Done!" : "Clean"}
-						</button>
-					)}
-				</div>
-			</CardContent>
-		</Card>
-	);
+    return (
+        <Card className="bg-[#0F0F17] border-[#14141e] hover:border-pink-600/50 transition-colors duration-200 h-full">
+            <CardContent className="h-full flex items-center justify-between">
+                <h3 className="text-white font-medium text-sm leading-tight">{title}</h3>
+                <div className="flex items-center gap-3">
+                    {size && <span className="text-xs text-core-grey400">{size}</span>}
+                    {hasClean && (
+                        <button
+                            onClick={handleClean}
+                            disabled={actionLoading}
+                            className="px-3 py-1 text-xs bg-[#1A1A24] hover:bg-pink-500 disabled:opacity-70 text-white rounded transition-colors flex items-center gap-1.5"
+                        >
+                            <BrushCleaning className="w-3.5 h-3.5" />
+                            {actionLoading ? "Running..." : actionSuccess ? "Done!" : "Clean"}
+                        </button>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+    );
 };
 
 const debloatData: Record<string, DebloatCardProps[]> = {
-	clean: [
-		{ title: "Temporary files", hasClean: true, size: "240.57 MB" },
-		{ title: "Thumbnail cache", hasClean: true, size: "240.57 MB" },
-		{ title: "Windows Defender files", hasClean: true, size: "240.57 MB" },
-		{ title: "System error files", hasClean: true, size: "240.57 MB" },
-		{ title: "Old ChkDsk files", hasClean: true, size: "240.57 MB" },
-		{ title: "DirectX Shader Cache", hasClean: true, size: "240.57 MB" },
-	],
-	services: [
-		{ title: "Disable Telemetry" },
-		{ title: "Disable Cortana" },
-		{ title: "Disable DiagTrack" },
-	],
-	autorun: [
-		{ title: "Disable Startup Apps" },
-		{ title: "Disable Game Bar Startup" },
-	],
+    clean: [
+        { title: "Temporary files", hasClean: true, size: "240.57 MB" },
+        { title: "Thumbnail cache", hasClean: true, size: "240.57 MB" },
+        { title: "Windows Defender files", hasClean: true, size: "240.57 MB" },
+        { title: "System error files", hasClean: true, size: "240.57 MB" },
+        { title: "Old ChkDsk files", hasClean: true, size: "240.57 MB" },
+        { title: "DirectX Shader Cache", hasClean: true, size: "240.57 MB" },
+    ],
+    services: [
+        { title: "Disable Telemetry" },
+        { title: "Disable Cortana" },
+        { title: "Disable DiagTrack" },
+    ],
+    autorun: [{ title: "Disable Startup Apps" }, { title: "Disable Game Bar Startup" }],
 };
 
 export const SettingsSection = ({
@@ -724,7 +718,7 @@ export const SettingsSection = ({
     sortState = "name",
     sortDirection = "asc",
     isSidebarCollapsed = false,
-}: SettingsSectionProps) => {   
+}: SettingsSectionProps) => {
     const parseSizeToBytes = (size?: string): number => {
         if (!size) return 0;
         const match = size.match(/([0-9]+\.?[0-9]*)\s*(KB|MB|GB)/i);
@@ -742,7 +736,10 @@ export const SettingsSection = ({
         return `${bytes} B`;
     };
 
-    const totalCleanBytes = (debloatData.clean || []).reduce((sum, i) => sum + parseSizeToBytes(i.size), 0);
+    const totalCleanBytes = (debloatData.clean || []).reduce(
+        (sum, i) => sum + parseSizeToBytes(i.size),
+        0,
+    );
     const totalCleanLabel = totalCleanBytes ? `${formatBytes(totalCleanBytes)} Total` : "";
     const [cleanOpen, setCleanOpen] = useState(true);
     // Filter settings based on active category, search query, and filter state
@@ -805,10 +802,14 @@ export const SettingsSection = ({
                         >
                             <div className="flex items-center gap-2">
                                 <div className="text-sm text-semibold text-white">Files</div>
-                                <span className="text-xs text-[#4F4F55] pt-0.5">{totalCleanLabel}</span>
+                                <span className="text-xs text-[#4F4F55] pt-0.5">
+                                    {totalCleanLabel}
+                                </span>
                             </div>
                             <div className="flex items-center">
-                                <ChevronDown className={`w-4 h-4 text-white transition-transform ${cleanOpen ? "rotate-180" : ""}`} />
+                                <ChevronDown
+                                    className={`w-4 h-4 text-white transition-transform ${cleanOpen ? "rotate-180" : ""}`}
+                                />
                             </div>
                         </button>
                     )}
@@ -826,8 +827,12 @@ export const SettingsSection = ({
                             <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <SlidersHorizontal className="w-8 h-8 text-gray-400" />
                             </div>
-                            <h3 className="text-lg font-medium text-white mb-2">No debloat items found</h3>
-                            <p className="text-gray-400">Try switching tabs or check your configuration</p>
+                            <h3 className="text-lg font-medium text-white mb-2">
+                                No debloat items found
+                            </h3>
+                            <p className="text-gray-400">
+                                Try switching tabs or check your configuration
+                            </p>
                         </div>
                     )}
                 </>
@@ -842,15 +847,19 @@ export const SettingsSection = ({
                             />
                         ))}
                     </div>
-                    
+
                     {/* Empty state */}
                     {sortedSettings.length === 0 && (
                         <div className="text-center py-12">
                             <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <SlidersHorizontal className="w-8 h-8 text-gray-400" />
                             </div>
-                            <h3 className="text-lg font-medium text-white mb-2">No settings found</h3>
-                            <p className="text-gray-400">Try adjusting your search or filter criteria</p>
+                            <h3 className="text-lg font-medium text-white mb-2">
+                                No settings found
+                            </h3>
+                            <p className="text-gray-400">
+                                Try adjusting your search or filter criteria
+                            </p>
                         </div>
                     )}
                 </>
