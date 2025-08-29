@@ -677,7 +677,8 @@ const allSettingsData: SettingCardProps[] = [
 ];
 
 // Debloat helpers and UI
-const isDebloatCategory = (cat: string) => ["clean", "services", "autoruns", "autorun"].includes(cat);
+const isDebloatCategory = (cat: string) =>
+    ["clean", "services", "autoruns", "autorun"].includes(cat);
 
 const DebloatCard = ({ title, hasClean = false, size }: DebloatCardProps) => {
     const [actionLoading, setActionLoading] = useState(false);
@@ -753,7 +754,11 @@ interface ServiceItem {
 const defaultServices: ServiceItem[] = [
     { name: "Xbox Live Networking Service", status: "running", startupType: "disabled" },
     { name: "Windows Connection Manager", status: "disabled", startupType: "automatic" },
-    { name: "Windows Presentation Foundation Font Cache 3.0.0.0", status: "running", startupType: "automatic" },
+    {
+        name: "Windows Presentation Foundation Font Cache 3.0.0.0",
+        status: "running",
+        startupType: "automatic",
+    },
     { name: "Windows Error Reporting Service", status: "disabled", startupType: "manual" },
     { name: "Windows Image Acquisition (WIA)", status: "running", startupType: "manual" },
     { name: "Windows Camera Frame Server", status: "disabled", startupType: "disabled" },
@@ -765,7 +770,7 @@ const statusBadgeClasses = (label: string) => {
     switch (label) {
         case "Running":
             return "bg-[#6366F1]/20 text-[#6366F1]";
-        default: 
+        default:
             return "bg-[#FF2E79]/20 text-[#FF2E79]";
     }
 };
@@ -854,14 +859,19 @@ const ServicesManager = () => {
 
                 <div className="divide-y divide-[#1e1e28]">
                     {filteredServices.map((svc, idx) => (
-                        <div key={`${svc.name}-${idx}`} className="grid grid-cols-12 items-center px-4 py-2 bg-[#0F0F17]">
+                        <div
+                            key={`${svc.name}-${idx}`}
+                            className="grid grid-cols-12 items-center px-4 py-2 bg-[#0F0F17]"
+                        >
                             <div className="col-span-8">
                                 <div className="text-sm text-white">{svc.name}</div>
                             </div>
                             <div className="col-span-2 flex items-center justify-center">
-                                <span className={`text-[11px] px-2 py-0.5 rounded-full ${statusBadgeClasses(
-                                    svc.startupType === "disabled" ? "Disabled" : "Running",
-                                )}`}>
+                                <span
+                                    className={`text-[11px] px-2 py-0.5 rounded-full ${statusBadgeClasses(
+                                        svc.startupType === "disabled" ? "Disabled" : "Running",
+                                    )}`}
+                                >
                                     {svc.startupType === "disabled" ? "Disabled" : "Running"}
                                 </span>
                             </div>
@@ -869,7 +879,9 @@ const ServicesManager = () => {
                                 <Dropdown
                                     options={startupTypeOptions}
                                     value={svc.startupType}
-                                    onValueChange={(val) => updateStartupType(idx, val as StartupType)}
+                                    onValueChange={(val) =>
+                                        updateStartupType(idx, val as StartupType)
+                                    }
                                     buttonClassName="min-w-[120px]"
                                     size="sm"
                                 />
@@ -912,7 +924,8 @@ const defaultAutoruns: AutorunItem[] = [
         name: "Discord",
         path: "HKCU:Software\\Microsoft\\Windows\\CurrentVersion\\Run",
         type: "user",
-        command: "C:\\Users\\<user>\\AppData\\Local\\Discord\\Update.exe --processStart Discord.exe",
+        command:
+            "C:\\Users\\<user>\\AppData\\Local\\Discord\\Update.exe --processStart Discord.exe",
         active: false,
     },
 ];
@@ -957,51 +970,67 @@ const AutorunsManager = () => {
                         <span>Registry Keys</span>
                         <span className="text-[#4F4F55]">{autoruns.length} Total</span>
                     </span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${registryOpen ? "rotate-180" : ""}`} />
+                    <ChevronDown
+                        className={`w-4 h-4 transition-transform ${registryOpen ? "rotate-180" : ""}`}
+                    />
                 </button>
 
                 {registryOpen && (
                     <div className="divide-y divide-[#1e1e28]">
                         {autoruns.map((item, idx) => (
                             <div key={`${item.name}-${idx}`} className="px-4 py-3 bg-[#0F0F17]">
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="flex items-start gap-3 min-w-0">
-                                    <div className="flex-shrink-0 mt-0.5">
-                                        <AppIcon appName={item.name} size={28} />
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-start gap-3 min-w-0">
+                                        <div className="flex-shrink-0 mt-0.5">
+                                            <AppIcon appName={item.name} size={28} />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-sm text-white truncate max-w-[420px]">
+                                                    {item.name}
+                                                </div>
+                                                <span
+                                                    className={`text-[10px] px-2 py-0.5 rounded-full ${typeBadgeClasses(item.type)}`}
+                                                >
+                                                    {item.type}
+                                                </span>
+                                                <span className="text-[10px] text-core-grey500">
+                                                    {item.active ? "Active" : "Inactive"}
+                                                </span>
+                                            </div>
+                                            <div className="mt-2 space-y-1">
+                                                <div className="text-[11px] text-core-grey500 flex items-start gap-2">
+                                                    <Folder className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
+                                                    <span className="text-core-grey400">Path</span>
+                                                    <span className="ml-2 text-core-grey300 break-all">
+                                                        {item.path}
+                                                    </span>
+                                                </div>
+                                                <div className="text-[11px] text-core-grey500 flex items-start gap-2">
+                                                    <Play className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
+                                                    <span className="text-core-grey400">Runs</span>
+                                                    <span className="ml-2 text-core-grey300 break-all">
+                                                        {item.command}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <div className="text-sm text-white truncate max-w-[420px]">{item.name}</div>
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${typeBadgeClasses(item.type)}`}>
-                                                {item.type}
-                                            </span>
-                                            <span className="text-[10px] text-core-grey500">{item.active ? "Active" : "Inactive"}</span>
-                                        </div>
-                                        <div className="mt-2 space-y-1">
-                                            <div className="text-[11px] text-core-grey500 flex items-start gap-2">
-                                                <Folder className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
-                                                <span className="text-core-grey400">Path</span>
-                                                <span className="ml-2 text-core-grey300 break-all">{item.path}</span>
-                                            </div>
-                                            <div className="text-[11px] text-core-grey500 flex items-start gap-2">
-                                                <Play className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
-                                                <span className="text-core-grey400">Runs</span>
-                                                <span className="ml-2 text-core-grey300 break-all">{item.command}</span>
-                                            </div>
-                                        </div>
+                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                        <Switch
+                                            checked={item.active}
+                                            onCheckedChange={() => toggleActive(idx)}
+                                            className="data-[state=checked]:bg-pink-500 data-[state=unchecked]:bg-gray-600 data-[state=unchecked]:border-grey-650"
+                                        />
+                                        <button
+                                            onClick={() => removeItem(idx)}
+                                            className="p-1.5 rounded bg-[#1A1A24] hover:bg-pink-600/20 transition-colors"
+                                            aria-label="Remove autorun"
+                                        >
+                                            <X className="w-3.5 h-3.5 text-core-grey400" />
+                                        </button>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                    <Switch
-                                        checked={item.active}
-                                        onCheckedChange={() => toggleActive(idx)}
-                                        className="data-[state=checked]:bg-pink-500 data-[state=unchecked]:bg-gray-600 data-[state=unchecked]:border-grey-650"
-                                    />
-                                    <button onClick={() => removeItem(idx)} className="p-1.5 rounded bg-[#1A1A24] hover:bg-pink-600/20 transition-colors" aria-label="Remove autorun">
-                                        <X className="w-3.5 h-3.5 text-core-grey400" />
-                                    </button>
-                                </div>
-                            </div>
                             </div>
                         ))}
                     </div>
@@ -1102,22 +1131,24 @@ export const SettingsSection = ({
                     ) : (
                         <>
                             {activeCategory === "clean" && (
-                        <button
-                            onClick={() => setCleanOpen(!cleanOpen)}
-                            className="flex items-center justify-between w-full mb-3 rounded-[10px] border border-[#1e1e28] bg-core-grey800 px-3 py-2"
-                        >
-                            <div className="flex items-center gap-2">
-                                <div className="text-sm text-semibold text-white">Files</div>
-                                <span className="text-xs text-[#4F4F55] pt-0.5">
-                                    {totalCleanLabel}
-                                </span>
-                            </div>
-                            <div className="flex items-center">
-                                <ChevronDown
-                                    className={`w-4 h-4 text-white transition-transform ${cleanOpen ? "rotate-180" : ""}`}
-                                />
-                            </div>
-                        </button>
+                                <button
+                                    onClick={() => setCleanOpen(!cleanOpen)}
+                                    className="flex items-center justify-between w-full mb-3 rounded-[10px] border border-[#1e1e28] bg-core-grey800 px-3 py-2"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-sm text-semibold text-white">
+                                            Files
+                                        </div>
+                                        <span className="text-xs text-[#4F4F55] pt-0.5">
+                                            {totalCleanLabel}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <ChevronDown
+                                            className={`w-4 h-4 text-white transition-transform ${cleanOpen ? "rotate-180" : ""}`}
+                                        />
+                                    </div>
+                                </button>
                             )}
 
                             <div className="flex flex-col gap-2">

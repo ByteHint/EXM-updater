@@ -77,9 +77,7 @@ export const Dropdown = ({
     }, [isOpen]);
 
     const sizeButtonClasses =
-        size === "sm"
-            ? "px-2 py-1 h-7 text-xs"
-            : "px-3 py-[9px] h-auto text-sm";
+        size === "sm" ? "px-2 py-1 h-7 text-xs" : "px-3 py-[9px] h-auto text-sm";
     const sizeItemClasses = size === "sm" ? "px-2 py-1.5 text-xs" : "px-3 py-2.5";
 
     return (
@@ -125,7 +123,9 @@ export const Dropdown = ({
                             >
                                 <div className="flex items-center gap-2">
                                     {option.icon}
-                                    <span className={`${value === option.value ? "text-white" : "text-gray-300"} ${size === "sm" ? "text-xs" : "text-sm"}`}>
+                                    <span
+                                        className={`${value === option.value ? "text-white" : "text-gray-300"} ${size === "sm" ? "text-xs" : "text-sm"}`}
+                                    >
                                         {option.label}
                                     </span>
                                 </div>
