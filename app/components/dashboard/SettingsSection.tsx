@@ -758,7 +758,11 @@ interface ServiceItem {
 const defaultServices: ServiceItem[] = [
     { name: "Xbox Live Networking Service", status: "running", startupType: "disabled" },
     { name: "Windows Connection Manager", status: "disabled", startupType: "automatic" },
-    { name: "Windows Presentation Foundation Font Cache 3.0.0.0", status: "running", startupType: "automatic" },
+    {
+        name: "Windows Presentation Foundation Font Cache 3.0.0.0",
+        status: "running",
+        startupType: "automatic",
+    },
     { name: "Windows Error Reporting Service", status: "disabled", startupType: "manual" },
     { name: "Windows Image Acquisition (WIA)", status: "running", startupType: "manual" },
     { name: "Windows Camera Frame Server", status: "disabled", startupType: "disabled" },
@@ -997,32 +1001,48 @@ const AutorunsManager = () => {
                                                     {item.name}
                                                 </div>
                                                 <button
-                                                    onClick={() => setOpenIndex((prev) => (prev === idx ? null : idx))}
+                                                    onClick={() =>
+                                                        setOpenIndex((prev) =>
+                                                            prev === idx ? null : idx,
+                                                        )
+                                                    }
                                                     className="p-1 rounded hover:bg-pink-600/20 transition-colors"
                                                     aria-label="Toggle details"
                                                 >
-                                                    <ChevronDown className={`w-4 h-4 text-core-grey400 transition-transform ${openIndex === idx ? "rotate-180" : ""}`} />
+                                                    <ChevronDown
+                                                        className={`w-4 h-4 text-core-grey400 transition-transform ${openIndex === idx ? "rotate-180" : ""}`}
+                                                    />
                                                 </button>
                                             </div>
                                             {openIndex === idx && (
                                                 <div className="mt-2 space-y-1">
                                                     <div className="text-[11px] text-core-grey500 flex items-start gap-2">
                                                         <Folder className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
-                                                        <span className="text-core-grey400">Path</span>
+                                                        <span className="text-core-grey400">
+                                                            Path
+                                                        </span>
                                                         <span className="ml-2 text-core-grey300 break-all">
                                                             {item.path}
                                                         </span>
                                                     </div>
                                                     <div className="text-[11px] text-core-grey500 flex items-start gap-2">
                                                         <TagsIcon className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
-                                                        <span className="text-core-grey400">Type</span>
+                                                        <span className="text-core-grey400">
+                                                            Type
+                                                        </span>
                                                         <span className="ml-2 text-core-grey300 break-all">
-                                                            <span className={`px-2 py-0.5 rounded-full ${typeBadgeClasses(item.type)}`}>{item.type}</span>
+                                                            <span
+                                                                className={`px-2 py-0.5 rounded-full ${typeBadgeClasses(item.type)}`}
+                                                            >
+                                                                {item.type}
+                                                            </span>
                                                         </span>
                                                     </div>
                                                     <div className="text-[11px] text-core-grey500 flex items-start gap-2">
                                                         <Play className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
-                                                        <span className="text-core-grey400">Runs</span>
+                                                        <span className="text-core-grey400">
+                                                            Runs
+                                                        </span>
                                                         <span className="ml-2 text-core-grey300 break-all">
                                                             {item.command}
                                                         </span>
@@ -1032,7 +1052,9 @@ const AutorunsManager = () => {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-5 flex-shrink-0 whitespace-nowrap">
-                                        <span className="text-[10px] text-[#FB2C36] whitespace-nowrap">{item.active ? "Active" : "Inactive"}</span>
+                                        <span className="text-[10px] text-[#FB2C36] whitespace-nowrap">
+                                            {item.active ? "Active" : "Inactive"}
+                                        </span>
                                         <Switch
                                             checked={item.active}
                                             onCheckedChange={() => toggleActive(idx)}
