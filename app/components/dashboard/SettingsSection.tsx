@@ -19,6 +19,10 @@ import {
     BrushCleaning,
     Folder,
     Play,
+    TagsIcon,
+    CalendarDays,
+    Inbox,
+    Trash,
 } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Dropdown } from "../ui/dropdown";
@@ -754,11 +758,7 @@ interface ServiceItem {
 const defaultServices: ServiceItem[] = [
     { name: "Xbox Live Networking Service", status: "running", startupType: "disabled" },
     { name: "Windows Connection Manager", status: "disabled", startupType: "automatic" },
-    {
-        name: "Windows Presentation Foundation Font Cache 3.0.0.0",
-        status: "running",
-        startupType: "automatic",
-    },
+    { name: "Windows Presentation Foundation Font Cache 3.0.0.0", status: "running", startupType: "automatic" },
     { name: "Windows Error Reporting Service", status: "disabled", startupType: "manual" },
     { name: "Windows Image Acquisition (WIA)", status: "running", startupType: "manual" },
     { name: "Windows Camera Frame Server", status: "disabled", startupType: "disabled" },
@@ -852,9 +852,17 @@ const ServicesManager = () => {
 
             <div className="rounded-[12px] border border-[#1e1e28] overflow-hidden">
                 <div className="grid grid-cols-12 px-4 py-2 bg-[#10101A] border-b border-[#1e1e28] text-xs text-core-grey500">
-                    <div className="col-span-8"> Display Name</div>
-                    <div className="col-span-2 text-center">Status</div>
-                    <div className="col-span-2 text-center">Startup Type</div>
+                    <div className="col-span-8 flex items-center gap-2">
+                        <TagsIcon className="w-4 h-4" /> Display Name
+                    </div>
+                    <div className="col-span-2 flex items-center justify-center gap-2 whitespace-nowrap">
+                        <CalendarDays className="w-4 h-4 shrink-0" />
+                        <span>Status</span>
+                    </div>
+                    <div className="col-span-2 flex items-center justify-center gap-2 whitespace-nowrap pl-4">
+                        <Inbox className="w-4 h-4 shrink-0" />
+                        <span>Startup Type</span>
+                    </div>
                 </div>
 
                 <div className="divide-y divide-[#1e1e28]">
@@ -914,19 +922,18 @@ const defaultAutoruns: AutorunItem[] = [
         active: true,
     },
     {
-        name: "Spotify",
-        path: "HKCU:Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-        type: "user",
-        command: "C:\\Users\\<user>\\AppData\\Roaming\\Spotify\\Spotify.exe --autostart",
+        name: "Security Health",
+        path: "Computer \\HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+        type: "windows",
+        command: "C:\\Windows\\System32\\SecurityHealthSystray.exe",
         active: true,
     },
     {
-        name: "Discord",
-        path: "HKCU:Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-        type: "user",
-        command:
-            "C:\\Users\\<user>\\AppData\\Local\\Discord\\Update.exe --processStart Discord.exe",
-        active: false,
+        name: "Security Health",
+        path: "Computer \\HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+        type: "windows",
+        command: "C:\\Windows\\System32\\SecurityHealthSystray.exe",
+        active: true,
     },
 ];
 
@@ -944,6 +951,7 @@ const typeBadgeClasses = (type: AutorunType) => {
 const AutorunsManager = () => {
     const [autoruns, setAutoruns] = useState<AutorunItem[]>(defaultAutoruns);
     const [registryOpen, setRegistryOpen] = useState(true);
+    const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     const toggleActive = (index: number) => {
         setAutoruns((prev) => {
@@ -968,7 +976,6 @@ const AutorunsManager = () => {
                 >
                     <span className="flex items-center gap-2">
                         <span>Registry Keys</span>
-                        <span className="text-[#4F4F55]">{autoruns.length} Total</span>
                     </span>
                     <ChevronDown
                         className={`w-4 h-4 transition-transform ${registryOpen ? "rotate-180" : ""}`}
@@ -989,45 +996,54 @@ const AutorunsManager = () => {
                                                 <div className="text-sm text-white truncate max-w-[420px]">
                                                     {item.name}
                                                 </div>
-                                                <span
-                                                    className={`text-[10px] px-2 py-0.5 rounded-full ${typeBadgeClasses(item.type)}`}
+                                                <button
+                                                    onClick={() => setOpenIndex((prev) => (prev === idx ? null : idx))}
+                                                    className="p-1 rounded hover:bg-pink-600/20 transition-colors"
+                                                    aria-label="Toggle details"
                                                 >
-                                                    {item.type}
-                                                </span>
-                                                <span className="text-[10px] text-core-grey500">
-                                                    {item.active ? "Active" : "Inactive"}
-                                                </span>
+                                                    <ChevronDown className={`w-4 h-4 text-core-grey400 transition-transform ${openIndex === idx ? "rotate-180" : ""}`} />
+                                                </button>
                                             </div>
-                                            <div className="mt-2 space-y-1">
-                                                <div className="text-[11px] text-core-grey500 flex items-start gap-2">
-                                                    <Folder className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
-                                                    <span className="text-core-grey400">Path</span>
-                                                    <span className="ml-2 text-core-grey300 break-all">
-                                                        {item.path}
-                                                    </span>
+                                            {openIndex === idx && (
+                                                <div className="mt-2 space-y-1">
+                                                    <div className="text-[11px] text-core-grey500 flex items-start gap-2">
+                                                        <Folder className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
+                                                        <span className="text-core-grey400">Path</span>
+                                                        <span className="ml-2 text-core-grey300 break-all">
+                                                            {item.path}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-[11px] text-core-grey500 flex items-start gap-2">
+                                                        <TagsIcon className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
+                                                        <span className="text-core-grey400">Type</span>
+                                                        <span className="ml-2 text-core-grey300 break-all">
+                                                            <span className={`px-2 py-0.5 rounded-full ${typeBadgeClasses(item.type)}`}>{item.type}</span>
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-[11px] text-core-grey500 flex items-start gap-2">
+                                                        <Play className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
+                                                        <span className="text-core-grey400">Runs</span>
+                                                        <span className="ml-2 text-core-grey300 break-all">
+                                                            {item.command}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-[11px] text-core-grey500 flex items-start gap-2">
-                                                    <Play className="w-3.5 h-3.5 mt-[2px] text-core-grey500" />
-                                                    <span className="text-core-grey400">Runs</span>
-                                                    <span className="ml-2 text-core-grey300 break-all">
-                                                        {item.command}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                    <div className="flex items-center gap-5 flex-shrink-0 whitespace-nowrap">
+                                        <span className="text-[10px] text-[#FB2C36] whitespace-nowrap">{item.active ? "Active" : "Inactive"}</span>
                                         <Switch
                                             checked={item.active}
                                             onCheckedChange={() => toggleActive(idx)}
-                                            className="data-[state=checked]:bg-pink-500 data-[state=unchecked]:bg-gray-600 data-[state=unchecked]:border-grey-650"
+                                            className="data-[state=checked]:bg-[#FB2C36] data-[state=unchecked]:bg-gray-600 data-[state=unchecked]:border-grey-650"
                                         />
                                         <button
                                             onClick={() => removeItem(idx)}
                                             className="p-1.5 rounded bg-[#1A1A24] hover:bg-pink-600/20 transition-colors"
                                             aria-label="Remove autorun"
                                         >
-                                            <X className="w-3.5 h-3.5 text-core-grey400" />
+                                            <Trash className="w-3.5 h-3.5 text-core-grey400" />
                                         </button>
                                     </div>
                                 </div>

@@ -8,7 +8,7 @@ import {
     Wand2,
     Cpu,
     Wrench,
-    Trash,
+    BrushCleaning,
 } from "lucide-react";
 import { Button } from "../ui/button";
 
@@ -79,7 +79,7 @@ export const ActionItemsSection = ({ activeCategory = "general" }: ActionItemsSe
         clean: {
             title: "Clean Up",
             description: "Remove unnecessary files and apps.",
-            icon: Trash,
+            icon: BrushCleaning,
         },
 
         autoruns: {

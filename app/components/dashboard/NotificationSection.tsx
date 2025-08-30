@@ -10,8 +10,9 @@ import {
     Monitor,
     Keyboard,
     MemoryStick,
-    Wrench,
-    Trash,
+    BrushCleaning,
+    Cog,
+    MonitorDot,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
@@ -49,10 +50,10 @@ export const NotificationSection = ({
     ];
 
     const debloatNavItems = [
-        { id: "clean", label: "Clean Up", icon: Trash },
-        { id: "services", label: "Services", icon: Wrench },
+        { id: "clean", label: "Clean Up", icon: BrushCleaning },
+        { id: "services", label: "Services", icon: Cog },
         { id: "deapps", label: "Apps", icon: AppWindow },
-        { id: "autoruns", label: "Autoruns", icon: Wrench },
+        { id: "autoruns", label: "Autoruns", icon: MonitorDot },
     ];
 
     // Determine which navigation items to show based on sidebar section
