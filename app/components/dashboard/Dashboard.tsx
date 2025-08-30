@@ -41,6 +41,9 @@ export default function Dashboard() {
         } else if (section === "Hardware") {
             console.warn("Dashboard: Setting activeCategory to cpu");
             setActiveCategory("cpu");
+        } else if (section === "Debloat") {
+            console.warn("Dashboard: Setting activeCategory to clean");
+            setActiveCategory("clean");
         }
         // No need to reset category for Home as it has its own component
     };
