@@ -18,7 +18,12 @@
         "electron:build:dir": "electron-builder --dir",
         "build:unpack": "run-s vite:build:app electron:build:dir",
         "build:win": "run-s vite:build:app electron:build:win",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "compile": "node compile.js",
+        "protect": "npm run build && node compile.js",
+        "start:protected": "electron main-protected.js",
+        "build:protected": "npm run protect && electron-builder --win",
+        "clean:compiled": "rimraf compiled"
     },
     "dependencies": {
         "@electron-toolkit/preload": "^3.0.2",
@@ -35,6 +40,7 @@
         "@radix-ui/react-switch": "^1.2.5",
         "@radix-ui/react-toggle": "^1.1.9",
         "@radix-ui/react-toggle-group": "^1.1.10",
+        "bytenode": "^1.5.7",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "lucide-react": "^0.511.0",
@@ -71,6 +77,7 @@
         "prettier": "^3.5.3",
         "react": "^19.1.1",
         "react-dom": "^19.1.1",
+        "rimraf": "^3.0.2",
         "tailwindcss": "^4.1.8",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.33.0",

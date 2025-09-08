@@ -2,38 +2,60 @@ appId: com.bytehint.exm
 productName: EXM 2.0
 
 directories:
-    buildResources: resources/build
+  buildResources: resources/build
 
+# Files to include in protected builds
 files:
-    - "!**/.vscode/*"
-    - "!src/*"
-    - "!electron.vite.config.{js,ts,mjs,cjs}"
-    - "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
-    - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
-    - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+  # Include protected bytecode files
+  - compiled/**/*
+  - out/renderer/**/*
+  - main-protected.js
+  - package.json
+  - node_modules/**/*
+  
+  # Exclude source code and development files
+  - "!**/.vscode/*"
+  - "!src/*"
+  - "!lib/*"                                    # Exclude your original source
+  - "!out/main/**/*"                            # Exclude unprotected main files
+  - "!out/preload/**/*"                         # Exclude unprotected preload files
+  - "!electron.vite.config.{js,ts,mjs,cjs}"
+  - "!compile-protection.js"                    # Don't include compilation script
+  - "!main.js"                                  # Exclude original main (we use main-protected.js)
+  - "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
+  - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
+  - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+  - "!tailwind.config.js"
+  - "!*.md"
 
 asarUnpack:
-    - resources/**
+  - resources/**
+  - compiled/**                                 # Keep bytecode uncompressed for execution
+
+# Override main entry point for protected builds
+extraMetadata:
+  main: main-protected.js
 
 win:
-    executableName: EXM 2.0
-    target:
-        - nsis
-    icon: resources/build/icon.ico # make sure this path is correct
-    artifactName: ${productName}-${version}-setup.${ext}
+  executableName: EXM 2.0
+  target:
+    - nsis
+  icon: resources/build/icon.ico
+  artifactName: ${productName}-${version}-setup.${ext}
 
 # Register custom protocol so OAuth can deep-link back to the desktop app
 protocols:
-    - name: EXM Protocol
-      schemes:
-          - exmapp
+  - name: EXM Protocol
+    schemes:
+      - exmapp
 
 nsis:
-    shortcutName: EXM 2.0
-    uninstallDisplayName: EXM 2.0
-    createDesktopShortcut: always
+  shortcutName: EXM 2.0
+  uninstallDisplayName: EXM 2.0
+  createDesktopShortcut: always
 
 npmRebuild: false
+
 # publish:
 #   provider: generic
 #   url: https://example.com/auto-updates
