@@ -18,6 +18,7 @@ export default [
             ".prettierrc",
             "tailwind.config.js",
             "compile.js",
+            "build-obfuscated.js",
             "main-protected.js",
             "compiled/**",
         ],

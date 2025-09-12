@@ -1,9 +1,9 @@
-const JavaScriptObfuscator = require('javascript-obfuscator');
-const fs = require('fs');
-const path = require('path');
-const { exec } = require('child_process');
+const JavaScriptObfuscator = require("javascript-obfuscator");
+const fs = require("fs");
+const path = require("path");
+const { exec } = require("child_process");
 
-console.log('🚀 Starting obfuscation...\n');
+console.log("🚀 Starting obfuscation...\n");
 
 // Obfuscation settings
 const obfuscatorOptions = {
@@ -14,30 +14,30 @@ const obfuscatorOptions = {
     deadCodeInjectionThreshold: 0.4,
     debugProtection: true,
     disableConsoleOutput: true,
-    identifierNamesGenerator: 'hexadecimal',
+    identifierNamesGenerator: "hexadecimal",
     rotateStringArray: true,
     selfDefending: true,
     stringArray: true,
-    stringArrayEncoding: ['base64'],
+    stringArrayEncoding: ["base64"],
     stringArrayThreshold: 0.75,
-    transformObjectKeys: true
+    transformObjectKeys: true,
 };
 
 // Clean build directory
-if (fs.existsSync('build')) {
-    fs.rmSync('build', { recursive: true, force: true });
+if (fs.existsSync("build")) {
+    fs.rmSync("build", { recursive: true, force: true });
 }
-fs.mkdirSync('build');
+fs.mkdirSync("build");
 
 // Obfuscate JS file
 function obfuscateFile(inputPath, outputPath) {
     try {
-        const sourceCode = fs.readFileSync(inputPath, 'utf8');
+        const sourceCode = fs.readFileSync(inputPath, "utf8");
         console.log(`📝 Obfuscating: ${inputPath}`);
-        
+
         const result = JavaScriptObfuscator.obfuscate(sourceCode, obfuscatorOptions);
         fs.writeFileSync(outputPath, result.getObfuscatedCode());
-        
+
         console.log(`✅ Done: ${outputPath}`);
     } catch (error) {
         console.error(`❌ Error: ${inputPath} - ${error.message}`);
@@ -57,19 +57,19 @@ function processDirectory(srcDir, buildDir) {
     }
 
     const items = fs.readdirSync(srcDir);
-    
-    items.forEach(item => {
+
+    items.forEach((item) => {
         const srcPath = path.join(srcDir, item);
         const buildPath = path.join(buildDir, item);
         const stat = fs.statSync(srcPath);
 
         if (stat.isDirectory()) {
             // Skip these directories
-            if (['node_modules', '.git', 'build', 'dist'].includes(item)) {
+            if (["node_modules", ".git", "build", "dist"].includes(item)) {
                 return;
             }
             processDirectory(srcPath, buildPath);
-        } else if (item.endsWith('.js')) {
+        } else if (item.endsWith(".js")) {
             // Obfuscate JavaScript files
             obfuscateFile(srcPath, buildPath);
         } else {
@@ -80,29 +80,29 @@ function processDirectory(srcDir, buildDir) {
 }
 
 // Process your source files (adjust path as needed)
-const sourceDir = 'src'; // Change this to your source directory
+const sourceDir = "src"; // Change this to your source directory
 if (fs.existsSync(sourceDir)) {
-    processDirectory(sourceDir, 'build');
+    processDirectory(sourceDir, "build");
 } else {
     // If no src folder, obfuscate files in root
-    console.log('No src folder found, processing root directory...');
-    
-    const files = fs.readdirSync('.');
-    files.forEach(file => {
-        if (file.endsWith('.js') && !file.includes('build') && !file.includes('node_modules')) {
-            obfuscateFile(file, path.join('build', file));
-        } else if (!fs.statSync(file).isDirectory() && !file.includes('node_modules')) {
-            copyFile(file, path.join('build', file));
+    console.log("No src folder found, processing root directory...");
+
+    const files = fs.readdirSync(".");
+    files.forEach((file) => {
+        if (file.endsWith(".js") && !file.includes("build") && !file.includes("node_modules")) {
+            obfuscateFile(file, path.join("build", file));
+        } else if (!fs.statSync(file).isDirectory() && !file.includes("node_modules")) {
+            copyFile(file, path.join("build", file));
         }
     });
 }
 
 // Copy package.json
-if (fs.existsSync('package.json')) {
-    copyFile('package.json', 'build/package.json');
+if (fs.existsSync("package.json")) {
+    copyFile("package.json", "build/package.json");
 }
 
-console.log('\n✨ Obfuscation complete!');
+console.log("\n✨ Obfuscation complete!");
 
 // If you have electron-builder, uncomment this to auto-build:
 /*
