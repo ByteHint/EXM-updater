@@ -1,6 +1,6 @@
 {
-    "appId": "com.yourcompany.exm",
-    "productName": "EXM",
+    "appId": "com.bytehint.exm",
+    "productName": "EXM 2.0",
     "directories": {
         "output": "dist",
         "buildResources": "build"
@@ -8,8 +8,8 @@
     "files": ["src/**/*", "node_modules/**/*", "package.json"],
     "publish": {
         "provider": "github",
-        "owner": "your-username",
-        "repo": "exm-desktop"
+        "owner": "bytehint",
+        "repo": "EXM-updater`"
     },
     "win": {
         "target": "nsis",
