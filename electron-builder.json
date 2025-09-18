@@ -9,7 +9,7 @@
     "publish": {
         "provider": "github",
         "owner": "bytehint",
-        "repo": "EXM-updater`"
+        "repo": "EXM-updater"
     },
     "win": {
         "target": "nsis",
