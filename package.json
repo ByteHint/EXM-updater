@@ -26,7 +26,7 @@
         "build:obfuscated": "node build-obfuscated.js",
         "dist": "electron-builder",
         "dist:win": "electron-builder --win",
-        "dist:mac": "electron-builder --mac", 
+        "dist:mac": "electron-builder --mac",
         "dist:linux": "electron-builder --linux",
         "release": "electron-builder --publish=always",
         "draft": "electron-builder --publish=onTagOrDraft"

@@ -2,22 +2,18 @@
     "appId": "com.yourcompany.exm",
     "productName": "EXM",
     "directories": {
-      "output": "dist",
-      "buildResources": "build"
+        "output": "dist",
+        "buildResources": "build"
     },
-    "files": [
-      "src/**/*",
-      "node_modules/**/*",
-      "package.json"
-    ],
+    "files": ["src/**/*", "node_modules/**/*", "package.json"],
     "publish": {
-      "provider": "github",
-      "owner": "your-username",
-      "repo": "exm-desktop"
+        "provider": "github",
+        "owner": "your-username",
+        "repo": "exm-desktop"
     },
     "win": {
-      "target": "nsis",
-      "certificateFile": "certs/certificate.p12",
-      "certificatePassword": ""
+        "target": "nsis",
+        "certificateFile": "certs/certificate.p12",
+        "certificatePassword": ""
     }
-  }
+}
