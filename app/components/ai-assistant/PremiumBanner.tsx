@@ -14,7 +14,9 @@ export default function PremiumBanner() {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Zap className="w-4 h-4 text-[#E91E63]" />
-                    <span className="text-xs text-white">Upgrade to Premium for unlimited AI usage</span>
+                    <span className="text-xs text-white">
+                        Upgrade to Premium for unlimited AI usage
+                    </span>
                 </div>
                 <Button
                     onClick={handleUpgrade}

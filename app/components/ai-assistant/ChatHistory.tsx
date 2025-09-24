@@ -28,7 +28,6 @@ export default function ChatHistory() {
         setSelectedChat(chatId);
     };
 
-
     const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
         e.stopPropagation();
         // TODO: Implement chat deletion
@@ -57,7 +56,7 @@ export default function ChatHistory() {
                 </div>
             </div>
 
-            <Separator className="mb-2"/>
+            <Separator className="mb-2" />
             {/* Chat Lists - Fixed Height, No Scroll */}
             <div className="flex-1 p-2 space-y-2 overflow-hidden">
                 {/* Today Section */}
@@ -83,13 +82,15 @@ export default function ChatHistory() {
                                     )}
                                     <span
                                         className={`text-sm font-medium truncate ${
-                                            selectedChat === chat.id ? "text-white" : "text-gray-300"
+                                            selectedChat === chat.id
+                                                ? "text-white"
+                                                : "text-gray-300"
                                         }`}
                                     >
                                         {chat.title}
                                     </span>
                                 </div>
-                                <Trash2 
+                                <Trash2
                                     className="w-4 h-4 text-gray-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
                                     onClick={(e) => handleDeleteChat(chat.id, e)}
                                 />
@@ -117,13 +118,15 @@ export default function ChatHistory() {
                                     <Square className="w-2 h-2 text-gray-500 flex-shrink-0" />
                                     <span
                                         className={`text-sm font-medium truncate ${
-                                            selectedChat === chat.id ? "text-white" : "text-gray-300"
+                                            selectedChat === chat.id
+                                                ? "text-white"
+                                                : "text-gray-300"
                                         }`}
                                     >
                                         {chat.title}
                                     </span>
                                 </div>
-                                <Trash2 
+                                <Trash2
                                     className="w-4 h-4 text-gray-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
                                     onClick={(e) => handleDeleteChat(chat.id, e)}
                                 />

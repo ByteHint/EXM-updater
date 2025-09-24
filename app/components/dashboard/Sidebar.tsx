@@ -332,7 +332,7 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
 
                     <nav className="px-3 mt-6">
                         <div className="ml-3.5 space-y-3">
-                            <div 
+                            <div
                                 className={`flex items-center gap-3 cursor-pointer ${
                                     activeSection === "AI Assistant"
                                         ? "text-white"
