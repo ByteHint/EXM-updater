@@ -332,9 +332,16 @@ export default function Sidebar({ onCollapseChange, onSectionChange }: SidebarPr
 
                     <nav className="px-3 mt-6">
                         <div className="ml-3.5 space-y-3">
-                            <div className="flex items-center gap-3">
+                            <div 
+                                className={`flex items-center gap-3 cursor-pointer ${
+                                    activeSection === "AI Assistant"
+                                        ? "text-white"
+                                        : "text-gray-500"
+                                }`}
+                                onClick={() => handleSectionClick("AI Assistant")}
+                            >
                                 <WandSparkles className="w-5 h-5 text-pink-500" />
-                                <span className="text-sm font-medium text-white">AI Assistant</span>
+                                <span className="text-sm font-medium">AI Assistant</span>
                             </div>
 
                             <div className="space-y-5">

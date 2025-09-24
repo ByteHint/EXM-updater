@@ -7,6 +7,7 @@ import { NotificationSection } from "./NotificationSection";
 import { SettingsSection } from "./SettingsSection";
 import Sidebar from "./Sidebar";
 import HomePage from "./HomePage";
+import AIAssistant from "../ai-assistant/AIAssistant";
 
 export default function Dashboard() {
     const [activeCategory, setActiveCategory] = useState("core");
@@ -146,6 +147,8 @@ export default function Dashboard() {
             />
             {activeSidebarSection === "Home" ? (
                 <HomePage />
+            ) : activeSidebarSection === "AI Assistant" ? (
+                <AIAssistant />
             ) : (
                 <div
                     className={`flex-1 p-6 transition-all duration-300 ${isSidebarCollapsed ? "ml-0" : ""}`}
