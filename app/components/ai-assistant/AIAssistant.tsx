@@ -79,7 +79,7 @@ export default function AIAssistant() {
                             />
 
                             {/* EXM AI 1.0 Badge */}
-                            <div className="absolute left-3 bottom-1 flex items-center gap-1">
+                            <div className="absolute left-3 bottom-1 flex items-center gap-2">
                                 <Pin className="w-2.5 h-2.5 text-purple-400" />
                                 <span className="text-xs text-purple-400 font-medium">
                                     EXM AI 1.0
